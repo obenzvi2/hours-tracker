@@ -719,14 +719,25 @@
   }
 
   // ── Auth ───────────────────────────────────────────────
-  let appInitialized = false;
-
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session) {
-      // Don't re-run full init on token refresh or other background events
-      if (appInitialized) { currentUserId = session.user.id; return; }
-      appInitialized = true;
       currentUserId = session.user.id;
+
+      // If app was already running (tab switch / page reload), skip loading screen
+      if (sessionStorage.getItem('ht_init') === '1') {
+        document.getElementById('appLoading').style.display = 'none';
+        document.getElementById('loginView').style.display  = 'none';
+        document.getElementById('userEmail').textContent    = session.user.email;
+        showMain();
+        // Reload data silently in background then re-render
+        Promise.all([loadSettingsFromDB(), loadMonthFromDB(curYear, curMonth)])
+          .then(() => { updateRatesBar(); render(); })
+          .catch(e => console.warn('bg reload:', e));
+        return;
+      }
+
+      // First login — show loading screen
+      sessionStorage.setItem('ht_init', '1');
       document.getElementById('appLoading').style.display = 'flex';
       document.getElementById('loadingError').style.display = 'none';
       document.getElementById('loginView').style.display  = 'none';
@@ -746,7 +757,7 @@
       showMain();
       render();
     } else {
-      appInitialized = false;
+      sessionStorage.removeItem('ht_init');
       document.getElementById('appLoading').style.display  = 'none';
       document.getElementById('mainView').style.display    = 'none';
       document.getElementById('settingsView').style.display = 'none';
