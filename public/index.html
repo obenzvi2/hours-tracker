@@ -374,6 +374,9 @@
 <div id="appLoading">
   <div class="spinner"></div>
   <div class="loading-text">Loading…</div>
+  <div id="loadingError" style="display:none;margin-top:12px;color:#c0392b;font-size:.85rem;text-align:center;max-width:280px;">
+    Could not connect to the server.<br>Your session may have expired — <a href="#" onclick="sb.auth.signOut();return false;" style="color:#c0392b;">sign in again</a>.
+  </div>
 </div>
 
 <!-- ══ LOGIN ══ -->
@@ -713,11 +716,16 @@
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       document.getElementById('appLoading').style.display = 'flex';
+      document.getElementById('loadingError').style.display = 'none';
       document.getElementById('loginView').style.display  = 'none';
+      const loadTimeout = setTimeout(() => {
+        document.getElementById('loadingError').style.display = 'block';
+      }, 8000);
       try {
         await loadSettingsFromDB();
         await loadMonthFromDB(curYear, curMonth);
       } catch(e) { console.warn('init:', e); }
+      clearTimeout(loadTimeout);
       document.getElementById('appLoading').style.display = 'none';
       document.getElementById('userEmail').textContent    = session.user.email;
       updateRatesBar();
