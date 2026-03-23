@@ -15,6 +15,11 @@
       padding: 16px;
     }
 
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
     /* ── LOGIN ── */
     #loginView {
       min-height: 100vh;
@@ -401,6 +406,7 @@
 
 <!-- ══ MAIN VIEW ══ -->
 <div id="mainView" style="display:none;">
+<div class="page-wrapper">
   <div class="app-header">
     <div class="header-top">
       <div class="app-title">📋 Work Hours Tracker</div>
@@ -505,10 +511,12 @@
       <span class="rates-bar-value"><span id="displayTravelAllowance">315</span> ₪</span>
     </div>
   </div>
+</div><!-- end page-wrapper -->
 </div>
 
 <!-- ══ BENEFITS VIEW ══ -->
 <div id="benefitsView">
+<div class="page-wrapper">
   <div class="benefits-header">
     <div>
       <div class="benefits-title">📊 Social Benefits</div>
@@ -528,10 +536,12 @@
     <div class="benefit-card-title">🏖️ Annual Vacation</div>
     <div id="vacationContent"></div>
   </div>
+</div><!-- end page-wrapper -->
 </div>
 
 <!-- ══ SETTINGS VIEW ══ -->
 <div id="settingsView">
+<div class="page-wrapper">
   <div class="settings-header">
     <div class="settings-title">⚙️ Settings</div>
     <button class="btn-back" id="btnBack">← Back</button>
@@ -575,6 +585,7 @@
       <button class="btn-save-settings" id="btnBackBottom" style="background:rgba(26,95,180,.15);color:#1a5fb4;box-shadow:none;border:2px solid #1a5fb4;">← Back</button>
     </div>
   </div>
+</div><!-- end page-wrapper -->
 </div>
 
 <div id="saveIndicator">✓ Saved</div>
