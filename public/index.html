@@ -727,11 +727,11 @@
       document.getElementById('loginView').style.display  = 'none';
       const loadTimeout = setTimeout(() => {
         document.getElementById('loadingError').style.display = 'block';
-      }, 12000);
+      }, 5000);
       try {
         await Promise.race([
           (async () => { await loadSettingsFromDB(); await loadMonthFromDB(curYear, curMonth); })(),
-          new Promise(resolve => setTimeout(resolve, 25000))
+          new Promise(resolve => setTimeout(resolve, 8000))
         ]);
       } catch(e) { console.warn('init:', e); }
       clearTimeout(loadTimeout);
