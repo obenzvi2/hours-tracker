@@ -233,7 +233,7 @@
         catch { settingsObj = {}; }
 
         const { error } = await sb.from('user_settings').upsert(
-          { settings: settingsObj },
+          { user_id: session.user.id, settings: settingsObj },
           { onConflict: 'user_id' }
         );
         if (error) { logLine(`  ✗ Settings error: ${error.message}`, 'err'); }
@@ -264,7 +264,7 @@
         const pensionChecked = pensionMap[docId] !== undefined ? pensionMap[docId] : true;
 
         const { error } = await sb.from('month_hours').upsert(
-          { month_key: docId, days: cleanDays, pension_checked: pensionChecked, updated_at: new Date().toISOString() },
+          { user_id: session.user.id, month_key: docId, days: cleanDays, pension_checked: pensionChecked, updated_at: new Date().toISOString() },
           { onConflict: 'user_id,month_key' }
         );
         if (error) { logLine(`  ✗ ${docId}: ${error.message}`, 'err'); }

@@ -609,6 +609,7 @@
     vacationDayRate:350, employerPensionPct:12.5, employeePensionPct:6
   };
   let settings = { ...DEFAULT_SETTINGS };
+  let currentUserId = null;
 
   // ── Month state ────────────────────────────────────────
   let monthData           = {};   // current month's day entries
@@ -628,7 +629,7 @@
   async function saveSettingsToDB() {
     const { error } = await sb
       .from('user_settings')
-      .upsert({ settings }, { onConflict: 'user_id' });
+      .upsert({ user_id: currentUserId, settings }, { onConflict: 'user_id' });
     if (error) console.warn('saveSettings:', error);
   }
 
@@ -677,6 +678,7 @@
     saveDebounce = setTimeout(async () => {
       savePending = false;
       const { error } = await sb.from('month_hours').upsert({
+        user_id:         currentUserId,
         month_key:       key,
         days:            monthData,
         pension_checked: monthPensionChecked,
@@ -693,6 +695,7 @@
     saveDebounce = null;
     savePending  = false;
     const { error } = await sb.from('month_hours').upsert({
+      user_id:         currentUserId,
       month_key:       `${curYear}_${curMonth}`,
       days:            monthData,
       pension_checked: monthPensionChecked,
@@ -715,6 +718,7 @@
   // ── Auth ───────────────────────────────────────────────
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session) {
+      currentUserId = session.user.id;
       document.getElementById('appLoading').style.display = 'flex';
       document.getElementById('loadingError').style.display = 'none';
       document.getElementById('loginView').style.display  = 'none';
