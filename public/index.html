@@ -374,8 +374,11 @@
 <div id="appLoading">
   <div class="spinner"></div>
   <div class="loading-text">Loading…</div>
-  <div id="loadingError" style="display:none;margin-top:12px;color:#c0392b;font-size:.85rem;text-align:center;max-width:280px;">
-    Could not connect to the server.<br>Your session may have expired — <a href="#" onclick="localStorage.clear();sessionStorage.clear();location.reload();return false;" style="color:#c0392b;">sign in again</a>.
+  <div id="loadingError" style="display:none;margin-top:12px;color:#888;font-size:.85rem;text-align:center;max-width:280px;">
+    Connection is slow — still trying…<br>
+    <a href="#" onclick="location.reload();return false;" style="color:#3584e4;">Retry</a>
+    &nbsp;·&nbsp;
+    <a href="#" onclick="localStorage.clear();sessionStorage.clear();location.reload();return false;" style="color:#888;">Sign in again</a>
   </div>
 </div>
 
@@ -724,10 +727,12 @@
       document.getElementById('loginView').style.display  = 'none';
       const loadTimeout = setTimeout(() => {
         document.getElementById('loadingError').style.display = 'block';
-      }, 8000);
+      }, 12000);
       try {
-        await loadSettingsFromDB();
-        await loadMonthFromDB(curYear, curMonth);
+        await Promise.race([
+          (async () => { await loadSettingsFromDB(); await loadMonthFromDB(curYear, curMonth); })(),
+          new Promise(resolve => setTimeout(resolve, 25000))
+        ]);
       } catch(e) { console.warn('init:', e); }
       clearTimeout(loadTimeout);
       document.getElementById('appLoading').style.display = 'none';
