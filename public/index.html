@@ -719,8 +719,13 @@
   }
 
   // ── Auth ───────────────────────────────────────────────
+  let appInitialized = false;
+
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session) {
+      // Don't re-run full init on token refresh or other background events
+      if (appInitialized) { currentUserId = session.user.id; return; }
+      appInitialized = true;
       currentUserId = session.user.id;
       document.getElementById('appLoading').style.display = 'flex';
       document.getElementById('loadingError').style.display = 'none';
@@ -741,6 +746,7 @@
       showMain();
       render();
     } else {
+      appInitialized = false;
       document.getElementById('appLoading').style.display  = 'none';
       document.getElementById('mainView').style.display    = 'none';
       document.getElementById('settingsView').style.display = 'none';
