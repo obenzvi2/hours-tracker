@@ -40,120 +40,168 @@ function fmtDD(d) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`
 }
 
-function BenefitCard({ title, period, cols, note }) {
-  return (
-    <div className="bn-card">
-      <div className="bn-card-head">
-        <span className="bn-card-title">{title}</span>
-        {period && <span className="bn-card-period">{period}</span>}
-      </div>
-      <div className="bn-cols">
-        {cols.map((col, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <div className="bn-divider" />}
-            <div className="bn-col">
-              <div className="bn-col-label">{col.label}</div>
-              <div className={`bn-col-value${col.accent ? ' bn-accent' : ''}`}>{col.value}</div>
-              {col.sub && <div className="bn-col-sub">{col.sub}</div>}
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
-      {note && <div className="bn-note">{note}</div>}
-    </div>
-  )
-}
-
 export default function BenefitsModal({ settings, onBack }) {
   const sen = calcSeniority(settings.workerStartDate)
 
+  // Seniority section
+  let seniorityContent
+  if (!sen) {
+    seniorityContent = <p className="no-startdate">Start date not set. Please add it in ⚙️ Settings → Employee Details.</p>
+  } else {
+    seniorityContent = (
+      <>
+        <div className="seniority-display">
+          <div>
+            <div className="seniority-num">{sen.years}</div>
+            <div className="seniority-label">Years</div>
+          </div>
+          <div className="seniority-divider" />
+          <div>
+            <div className="seniority-num">{sen.months}</div>
+            <div className="seniority-label">Months</div>
+          </div>
+          <div className="seniority-divider" />
+          <div>
+            <div className="seniority-num">{sen.totalMonths}</div>
+            <div className="seniority-label">Total months</div>
+          </div>
+        </div>
+        <p style={{ fontSize: '.8rem', color: '#999', marginTop: 10 }}>
+          Start date: {settings.workerStartDate} &nbsp;|&nbsp; As of today: {new Date().toLocaleDateString('en-GB')}
+        </p>
+      </>
+    )
+  }
+
+  // Recuperation section
+  let recuperationContent
+  if (!sen) {
+    recuperationContent = <p className="no-startdate">Requires start date in Settings.</p>
+  } else {
+    const start          = parseIsraeliDate(settings.workerStartDate)
+    const today          = new Date()
+    const currentYearNum = sen.years + 1
+    const yearPeriodStart = sen.years === 0 ? start : new Date(start.getFullYear() + sen.years, start.getMonth(), start.getDate())
+    const yearPeriodEnd   = new Date(start.getFullYear() + sen.years + 1, start.getMonth(), start.getDate())
+    const daysEntitled    = getRecuperationDays(sen.years)
+    let monthsElapsed     = (today.getFullYear() - yearPeriodStart.getFullYear()) * 12 + (today.getMonth() - yearPeriodStart.getMonth())
+    if (today.getDate() < yearPeriodStart.getDate()) monthsElapsed--
+    monthsElapsed = Math.max(0, Math.min(12, monthsElapsed))
+    const empPct         = settings.employmentPct || 100
+    const empFactor      = empPct / 100
+    const annualTotal    = daysEntitled * RECUPERATION_DAY_RATE * empFactor
+    const monthlyAccrual = annualTotal / 12
+    const accruedSoFar   = monthlyAccrual * monthsElapsed
+
+    recuperationContent = (
+      <>
+        <div style={{ background: '#eef4ff', borderRadius: 10, padding: '10px 16px', marginBottom: 14, fontSize: '.83rem', color: '#333', lineHeight: 1.6 }}>
+          <strong>Year {currentYearNum} of employment</strong> &nbsp;|&nbsp;
+          {fmtDD(yearPeriodStart)} – {fmtDD(yearPeriodEnd)} &nbsp;|&nbsp;
+          <strong>{monthsElapsed}</strong> / 12 months elapsed
+        </div>
+        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Recuperation Days (Year {currentYearNum})</span>
+            <span className="benefit-stat-value">{daysEntitled}</span>
+            <span className="benefit-stat-unit">days per full year</span>
+          </div>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Employment Scope</span>
+            <span className="benefit-stat-value">{empPct}%</span>
+            <span className="benefit-stat-unit">set in ⚙️ Settings</span>
+          </div>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Monthly Accrual</span>
+            <span className="benefit-stat-value">{fmtShekel(monthlyAccrual)}</span>
+            <span className="benefit-stat-unit">₪ / month</span>
+          </div>
+          <div className="benefit-stat highlight">
+            <span className="benefit-stat-label">Accrued to Date</span>
+            <span className="benefit-stat-value">{fmtShekel(accruedSoFar)}</span>
+            <span className="benefit-stat-unit">{monthsElapsed} months × {fmtShekel(monthlyAccrual)}</span>
+          </div>
+        </div>
+        <div className="benefit-stat" style={{ marginBottom: 14 }}>
+          <span className="benefit-stat-label">Annual Total ({daysEntitled} days × ₪{RECUPERATION_DAY_RATE} × {empPct}%)</span>
+          <span className="benefit-stat-value">{fmtShekel(annualTotal)}</span>
+          <span className="benefit-stat-unit">₪ per full year</span>
+        </div>
+        <div className="benefit-note">
+          Recuperation pay is paid once a year, typically around July–August. Rate: ₪{RECUPERATION_DAY_RATE}/day (private sector, 2026) for 100% employment scope.
+          Days: 5 (year 1) → 6 (years 2–3) → 7 (years 4–10) → 8 (years 11–15) → 9 (years 16–19) → 10 (year 20+).<br />
+          <em>To update employment scope: ⚙️ Settings → Salary Settings → Employment Scope.</em>
+        </div>
+      </>
+    )
+  }
+
+  // Vacation section
+  let vacationContent
+  if (!sen) {
+    vacationContent = <p className="no-startdate">Requires start date in Settings.</p>
+  } else {
+    const vacDays         = getVacationDays(sen.years)
+    const dailyRate       = settings.vacationDayRate || 350
+    const annualVacValue  = vacDays * dailyRate
+    const monthlyVacValue = annualVacValue / 12
+
+    vacationContent = (
+      <>
+        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Vacation Days (Year {sen.years + 1})</span>
+            <span className="benefit-stat-value">{vacDays}</span>
+            <span className="benefit-stat-unit">days per year</span>
+          </div>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Daily Rate</span>
+            <span className="benefit-stat-value">{fmtShekel(dailyRate)}</span>
+            <span className="benefit-stat-unit">set in ⚙️ Settings</span>
+          </div>
+          <div className="benefit-stat">
+            <span className="benefit-stat-label">Monthly Accrual</span>
+            <span className="benefit-stat-value">{fmtShekel(monthlyVacValue)}</span>
+            <span className="benefit-stat-unit">₪ / month</span>
+          </div>
+          <div className="benefit-stat highlight">
+            <span className="benefit-stat-label">Annual Value</span>
+            <span className="benefit-stat-value">{fmtShekel(annualVacValue)}</span>
+            <span className="benefit-stat-unit">{vacDays} days × ₪{dailyRate}</span>
+          </div>
+        </div>
+        <div className="benefit-note">
+          Annual leave by law (Annual Leave Law): 14 days (years 1–3) → 16 days (year 4) → 18 days (year 5) → 21 days (year 6+).<br />
+          <em>To update daily rate: ⚙️ Settings → Salary Settings → Vacation Day Rate.</em>
+        </div>
+      </>
+    )
+  }
+
   return (
     <div className="page-wrapper">
-      <div className="bn-header">
-        <span className="bn-header-title">📊 Social Benefits</span>
+      <div className="benefits-header">
+        <div>
+          <div className="benefits-title">📊 Social Benefits</div>
+          <div className="benefits-subtitle">Calculated per Israeli labor law for domestic workers</div>
+        </div>
         <button className="btn-back" onClick={onBack}>← Back</button>
       </div>
 
-      {/* Seniority */}
-      {!sen ? (
-        <div className="bn-card">
-          <div className="bn-card-head"><span className="bn-card-title">📅 Seniority</span></div>
-          <p className="bn-empty">Start date not set — add it in ⚙️ Settings → Employee Details.</p>
-        </div>
-      ) : (
-        <BenefitCard
-          title="📅 Seniority"
-          cols={[
-            { label: 'Years',        value: sen.years },
-            { label: 'Months',       value: sen.months },
-            { label: 'Total Months', value: sen.totalMonths, accent: true },
-            { label: 'Start Date',   value: settings.workerStartDate, sub: 'DD/MM/YYYY' },
-          ]}
-        />
-      )}
+      <div className="benefit-card">
+        <div className="benefit-card-title">📅 Seniority</div>
+        {seniorityContent}
+      </div>
 
-      {/* Recuperation */}
-      {!sen ? (
-        <div className="bn-card">
-          <div className="bn-card-head"><span className="bn-card-title">🌴 Recuperation Pay</span></div>
-          <p className="bn-empty">Requires start date in Settings.</p>
-        </div>
-      ) : (() => {
-        const start           = parseIsraeliDate(settings.workerStartDate)
-        const today           = new Date()
-        const currentYearNum  = sen.years + 1
-        const yearPeriodStart = sen.years === 0 ? start : new Date(start.getFullYear() + sen.years, start.getMonth(), start.getDate())
-        const yearPeriodEnd   = new Date(start.getFullYear() + sen.years + 1, start.getMonth(), start.getDate())
-        const daysEntitled    = getRecuperationDays(sen.years)
-        let monthsElapsed     = (today.getFullYear() - yearPeriodStart.getFullYear()) * 12 + (today.getMonth() - yearPeriodStart.getMonth())
-        if (today.getDate() < yearPeriodStart.getDate()) monthsElapsed--
-        monthsElapsed = Math.max(0, Math.min(12, monthsElapsed))
-        const empPct          = settings.employmentPct || 100
-        const annualTotal     = daysEntitled * RECUPERATION_DAY_RATE * (empPct / 100)
-        const monthlyAccrual  = annualTotal / 12
-        const accruedSoFar    = monthlyAccrual * monthsElapsed
+      <div className="benefit-card">
+        <div className="benefit-card-title">🌴 Recuperation Pay</div>
+        {recuperationContent}
+      </div>
 
-        return (
-          <BenefitCard
-            title="🌴 Recuperation Pay"
-            period={`Year ${currentYearNum} · ${fmtDD(yearPeriodStart)} – ${fmtDD(yearPeriodEnd)} · ${monthsElapsed}/12 months`}
-            cols={[
-              { label: 'Days',           value: daysEntitled,           sub: `year ${currentYearNum}` },
-              { label: 'Scope',          value: `${empPct}%`,           sub: `₪${RECUPERATION_DAY_RATE}/day` },
-              { label: 'Monthly Accrual',value: fmtShekel(monthlyAccrual), sub: 'per month' },
-              { label: 'Accrued to Date',value: fmtShekel(accruedSoFar),   sub: `${monthsElapsed} months`, accent: true },
-            ]}
-            note={`Paid once/year (July–Aug). Annual total: ${fmtShekel(annualTotal)} · Days: 5 (yr1) → 6 (yr2–3) → 7 (yr4–10) → 8 (yr11–15) → 9 (yr16–19) → 10 (yr20+)`}
-          />
-        )
-      })()}
-
-      {/* Vacation */}
-      {!sen ? (
-        <div className="bn-card">
-          <div className="bn-card-head"><span className="bn-card-title">🏖️ Annual Vacation</span></div>
-          <p className="bn-empty">Requires start date in Settings.</p>
-        </div>
-      ) : (() => {
-        const vacDays        = getVacationDays(sen.years)
-        const dailyRate      = settings.vacationDayRate || 350
-        const annualVacValue = vacDays * dailyRate
-        const monthlyVacValue= annualVacValue / 12
-
-        return (
-          <BenefitCard
-            title="🏖️ Annual Vacation"
-            period={`Year ${sen.years + 1}`}
-            cols={[
-              { label: 'Days',           value: vacDays,                   sub: `year ${sen.years + 1}` },
-              { label: 'Daily Rate',     value: fmtShekel(dailyRate),      sub: 'from Settings' },
-              { label: 'Monthly Accrual',value: fmtShekel(monthlyVacValue),sub: 'per month' },
-              { label: 'Annual Value',   value: fmtShekel(annualVacValue), sub: `${vacDays} days × ₪${dailyRate}`, accent: true },
-            ]}
-            note={`By law: 14 days (yr 1–3) → 16 (yr 4) → 18 (yr 5) → 21 (yr 6+) · Update daily rate in ⚙️ Settings → Salary Settings`}
-          />
-        )
-      })()}
+      <div className="benefit-card">
+        <div className="benefit-card-title">🏖️ Annual Vacation</div>
+        {vacationContent}
+      </div>
     </div>
   )
 }
