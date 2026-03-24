@@ -163,45 +163,59 @@ thead th.col-pay { background: #1246a0; }
 /* ── BENEFITS ── */
 .benefits-header {
   background: linear-gradient(135deg, #1a5fb4, #3584e4);
-  color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
+  color: #fff; border-radius: 12px; padding: 12px 18px; margin-bottom: 12px;
   box-shadow: 0 4px 16px rgba(26,95,180,.35);
   display: flex; align-items: center; justify-content: space-between;
 }
-.benefits-title { font-size: 1.4rem; font-weight: 700; }
-.benefits-subtitle { font-size: .85rem; opacity: .8; margin-top: 4px; }
+.benefits-title { font-size: 1.1rem; font-weight: 700; }
+.benefits-subtitle { font-size: .78rem; opacity: .8; margin-top: 2px; }
 .benefit-card {
-  background: #fff; border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 24px; margin-bottom: 20px;
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 12px 14px; margin-bottom: 10px;
 }
 .benefit-card-title {
-  font-size: 1rem; font-weight: 700; color: #1a5fb4;
-  margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #eef4ff;
-  display: flex; align-items: center; gap: 8px;
+  font-size: .85rem; font-weight: 700; color: #1a5fb4;
+  margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #eef4ff;
+  display: flex; align-items: center; gap: 6px;
 }
-.seniority-display {
-  display: flex; align-items: center; gap: 24px;
-  background: #eef4ff; border-radius: 12px; padding: 16px 20px;
+.no-startdate { color: #aaa; font-style: italic; font-size: .85rem; }
+
+/* Compact metric cards */
+.metrics-row { display: grid; gap: 8px; }
+.metrics-3 { grid-template-columns: repeat(3, 1fr); }
+.metrics-4 { grid-template-columns: repeat(4, 1fr); }
+.metric-card {
+  background: #f7faff; border-radius: 8px; padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px;
 }
-.seniority-num   { font-size: 2.2rem; font-weight: 800; color: #1a5fb4; line-height: 1; }
-.seniority-label { font-size: .8rem; color: #666; margin-top: 2px; }
-.seniority-divider { width: 1px; height: 44px; background: #c8d8ed; }
-.no-startdate { color: #aaa; font-style: italic; font-size: .9rem; }
-.benefit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-.benefit-stat {
-  background: #f7faff; border-radius: 12px; padding: 14px 16px;
-  display: flex; flex-direction: column; gap: 4px;
+.metric-card-hl { background: linear-gradient(135deg, #1a5fb4, #3584e4); }
+.metric-label { font-size: .68rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.metric-card-hl .metric-label { color: rgba(255,255,255,.75); }
+.metric-value { font-size: 1.1rem; font-weight: 800; color: #1a5fb4; line-height: 1.2; }
+.metric-card-hl .metric-value { color: #fff; }
+.metric-sub { font-size: .68rem; color: #aaa; }
+.metric-card-hl .metric-sub { color: rgba(255,255,255,.65); }
+
+.benefit-period-bar {
+  font-size: .75rem; color: #555; background: #eef4ff; border-radius: 6px;
+  padding: 5px 10px; margin-bottom: 8px;
 }
-.benefit-stat-label { font-size: .75rem; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: .03em; }
-.benefit-stat-value { font-size: 1.25rem; font-weight: 800; color: #1a5fb4; }
-.benefit-stat-unit  { font-size: .75rem; color: #aaa; }
+.benefit-note {
+  font-size: .72rem; color: #999; background: #f7faff; border-radius: 6px;
+  padding: 6px 10px; border-left: 3px solid #c8d8ed; line-height: 1.4; margin-top: 8px;
+}
+
+/* legacy - keep for safety */
+.seniority-display { display: none; }
+.benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.benefit-stat { background: #f7faff; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.benefit-stat-label { font-size: .72rem; color: #888; font-weight: 500; text-transform: uppercase; }
+.benefit-stat-value { font-size: 1.1rem; font-weight: 800; color: #1a5fb4; }
+.benefit-stat-unit  { font-size: .72rem; color: #aaa; }
 .benefit-stat.highlight { background: linear-gradient(135deg, #1a5fb4, #3584e4); }
 .benefit-stat.highlight .benefit-stat-label { color: rgba(255,255,255,.75); }
-.benefit-stat.highlight .benefit-stat-value { color: #fff; font-size: 1.5rem; }
+.benefit-stat.highlight .benefit-stat-value { color: #fff; }
 .benefit-stat.highlight .benefit-stat-unit  { color: rgba(255,255,255,.65); }
-.benefit-note {
-  font-size: .78rem; color: #888; background: #f7faff; border-radius: 8px;
-  padding: 10px 14px; border-left: 3px solid #c8d8ed; line-height: 1.5;
-}
 .btn-benefits {
   background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
   color: #fff; border-radius: 10px; padding: 7px 16px; font-size: .85rem;

@@ -40,40 +40,34 @@ function fmtDD(d) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`
 }
 
+function MetricCard({ label, value, sub, highlight }) {
+  return (
+    <div className={`metric-card${highlight ? ' metric-card-hl' : ''}`}>
+      <div className="metric-label">{label}</div>
+      <div className="metric-value">{value}</div>
+      {sub && <div className="metric-sub">{sub}</div>}
+    </div>
+  )
+}
+
 export default function BenefitsModal({ settings, onBack }) {
   const sen = calcSeniority(settings.workerStartDate)
 
-  // Seniority section
+  // Seniority
   let seniorityContent
   if (!sen) {
     seniorityContent = <p className="no-startdate">Start date not set. Please add it in ⚙️ Settings → Employee Details.</p>
   } else {
     seniorityContent = (
-      <>
-        <div className="seniority-display">
-          <div>
-            <div className="seniority-num">{sen.years}</div>
-            <div className="seniority-label">Years</div>
-          </div>
-          <div className="seniority-divider" />
-          <div>
-            <div className="seniority-num">{sen.months}</div>
-            <div className="seniority-label">Months</div>
-          </div>
-          <div className="seniority-divider" />
-          <div>
-            <div className="seniority-num">{sen.totalMonths}</div>
-            <div className="seniority-label">Total months</div>
-          </div>
-        </div>
-        <p style={{ fontSize: '.8rem', color: '#999', marginTop: 10 }}>
-          Start date: {settings.workerStartDate} &nbsp;|&nbsp; As of today: {new Date().toLocaleDateString('en-GB')}
-        </p>
-      </>
+      <div className="metrics-row metrics-3">
+        <MetricCard label="Years" value={sen.years} sub={`since ${settings.workerStartDate}`} />
+        <MetricCard label="Months" value={sen.months} sub="this year" />
+        <MetricCard label="Total Months" value={sen.totalMonths} highlight />
+      </div>
     )
   }
 
-  // Recuperation section
+  // Recuperation
   let recuperationContent
   if (!sen) {
     recuperationContent = <p className="no-startdate">Requires start date in Settings.</p>
@@ -95,48 +89,24 @@ export default function BenefitsModal({ settings, onBack }) {
 
     recuperationContent = (
       <>
-        <div style={{ background: '#eef4ff', borderRadius: 10, padding: '10px 16px', marginBottom: 14, fontSize: '.83rem', color: '#333', lineHeight: 1.6 }}>
-          <strong>Year {currentYearNum} of employment</strong> &nbsp;|&nbsp;
-          {fmtDD(yearPeriodStart)} – {fmtDD(yearPeriodEnd)} &nbsp;|&nbsp;
-          <strong>{monthsElapsed}</strong> / 12 months elapsed
+        <div className="benefit-period-bar">
+          Year {currentYearNum} · {fmtDD(yearPeriodStart)} – {fmtDD(yearPeriodEnd)} · {monthsElapsed}/12 months elapsed
         </div>
-        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Recuperation Days (Year {currentYearNum})</span>
-            <span className="benefit-stat-value">{daysEntitled}</span>
-            <span className="benefit-stat-unit">days per full year</span>
-          </div>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Employment Scope</span>
-            <span className="benefit-stat-value">{empPct}%</span>
-            <span className="benefit-stat-unit">set in ⚙️ Settings</span>
-          </div>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Monthly Accrual</span>
-            <span className="benefit-stat-value">{fmtShekel(monthlyAccrual)}</span>
-            <span className="benefit-stat-unit">₪ / month</span>
-          </div>
-          <div className="benefit-stat highlight">
-            <span className="benefit-stat-label">Accrued to Date</span>
-            <span className="benefit-stat-value">{fmtShekel(accruedSoFar)}</span>
-            <span className="benefit-stat-unit">{monthsElapsed} months × {fmtShekel(monthlyAccrual)}</span>
-          </div>
-        </div>
-        <div className="benefit-stat" style={{ marginBottom: 14 }}>
-          <span className="benefit-stat-label">Annual Total ({daysEntitled} days × ₪{RECUPERATION_DAY_RATE} × {empPct}%)</span>
-          <span className="benefit-stat-value">{fmtShekel(annualTotal)}</span>
-          <span className="benefit-stat-unit">₪ per full year</span>
+        <div className="metrics-row metrics-4">
+          <MetricCard label="Days" value={daysEntitled} sub={`year ${currentYearNum}`} />
+          <MetricCard label="Scope" value={`${empPct}%`} sub={`×₪${RECUPERATION_DAY_RATE}/day`} />
+          <MetricCard label="Monthly Accrual" value={fmtShekel(monthlyAccrual)} sub="per month" />
+          <MetricCard label="Accrued to Date" value={fmtShekel(accruedSoFar)} sub={`${monthsElapsed} months`} highlight />
         </div>
         <div className="benefit-note">
-          Recuperation pay is paid once a year, typically around July–August. Rate: ₪{RECUPERATION_DAY_RATE}/day (private sector, 2026) for 100% employment scope.
-          Days: 5 (year 1) → 6 (years 2–3) → 7 (years 4–10) → 8 (years 11–15) → 9 (years 16–19) → 10 (year 20+).<br />
-          <em>To update employment scope: ⚙️ Settings → Salary Settings → Employment Scope.</em>
+          Paid once/year (July–Aug). Rate: ₪{RECUPERATION_DAY_RATE}/day · Annual: {fmtShekel(annualTotal)} ·
+          Days: 5→6 (yr1)→7 (yr4)→8 (yr11)→9 (yr16)→10 (yr20+)
         </div>
       </>
     )
   }
 
-  // Vacation section
+  // Vacation
   let vacationContent
   if (!sen) {
     vacationContent = <p className="no-startdate">Requires start date in Settings.</p>
@@ -148,31 +118,14 @@ export default function BenefitsModal({ settings, onBack }) {
 
     vacationContent = (
       <>
-        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Vacation Days (Year {sen.years + 1})</span>
-            <span className="benefit-stat-value">{vacDays}</span>
-            <span className="benefit-stat-unit">days per year</span>
-          </div>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Daily Rate</span>
-            <span className="benefit-stat-value">{fmtShekel(dailyRate)}</span>
-            <span className="benefit-stat-unit">set in ⚙️ Settings</span>
-          </div>
-          <div className="benefit-stat">
-            <span className="benefit-stat-label">Monthly Accrual</span>
-            <span className="benefit-stat-value">{fmtShekel(monthlyVacValue)}</span>
-            <span className="benefit-stat-unit">₪ / month</span>
-          </div>
-          <div className="benefit-stat highlight">
-            <span className="benefit-stat-label">Annual Value</span>
-            <span className="benefit-stat-value">{fmtShekel(annualVacValue)}</span>
-            <span className="benefit-stat-unit">{vacDays} days × ₪{dailyRate}</span>
-          </div>
+        <div className="metrics-row metrics-4">
+          <MetricCard label="Days" value={vacDays} sub={`year ${sen.years + 1}`} />
+          <MetricCard label="Daily Rate" value={fmtShekel(dailyRate)} sub="from Settings" />
+          <MetricCard label="Monthly Accrual" value={fmtShekel(monthlyVacValue)} sub="per month" />
+          <MetricCard label="Annual Value" value={fmtShekel(annualVacValue)} sub={`${vacDays} days × ₪${dailyRate}`} highlight />
         </div>
         <div className="benefit-note">
-          Annual leave by law (Annual Leave Law): 14 days (years 1–3) → 16 days (year 4) → 18 days (year 5) → 21 days (year 6+).<br />
-          <em>To update daily rate: ⚙️ Settings → Salary Settings → Vacation Day Rate.</em>
+          By law: 14 days (yr 1–3) → 16 (yr 4) → 18 (yr 5) → 21 (yr 6+) · Update daily rate in ⚙️ Settings
         </div>
       </>
     )
