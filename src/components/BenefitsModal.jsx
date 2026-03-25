@@ -269,11 +269,11 @@ export default function BenefitsModal({ settings, onBack }) {
 
               {/* Pension rows */}
               <div className="pension-rows">
-                <div className="pension-row">
+                <div className="pension-row pension-row-bold">
                   <span className="pension-row-label">Employer Contribution (6.5%)</span>
                   <span className="pension-row-value">{fmtShekel(empContrib)}</span>
                 </div>
-                <div className="pension-row">
+                <div className="pension-row pension-row-bold">
                   <span className="pension-row-label">Employee Deduction (6%)</span>
                   <span className="pension-row-value">{fmtShekel(employeeDeduct)}</span>
                 </div>
