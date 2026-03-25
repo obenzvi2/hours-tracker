@@ -198,6 +198,7 @@ thead th.col-pay { background: #1246a0; }
 .benefit-stat.highlight .benefit-stat-label { color: rgba(255,255,255,.75); font-size: .68rem; }
 .benefit-stat.highlight .benefit-stat-value { color: #fff; font-size: 1.1rem; }
 .benefit-stat.highlight .benefit-stat-unit  { color: rgba(255,255,255,.65); font-size: .68rem; }
+.pension-section-label { font-size: .72rem; font-weight: 700; color: #1a5fb4; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
 .benefit-note {
   font-size: .78rem; color: #888; background: #f7faff; border-radius: 8px;
   padding: 10px 14px; border-left: 3px solid #c8d8ed; line-height: 1.5;
