@@ -281,6 +281,10 @@ export default function BenefitsModal({ settings, onBack }) {
                   <span className="pension-row-label">Severance Fund (6%)</span>
                   <span className="pension-row-value">{fmtShekel(empSeverance)}</span>
                 </div>
+                <div className="pension-row pension-row-subtotal">
+                  <span className="pension-row-label">Employer Total (12.5%)</span>
+                  <span className="pension-row-value">{fmtShekel(employerTotal)}</span>
+                </div>
                 <div className="pension-divider" />
                 <div className="pension-row pension-row-total">
                   <span className="pension-row-label">Total to Pension Fund (18.5%)</span>
