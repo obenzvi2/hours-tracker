@@ -100,7 +100,7 @@ export default function BenefitsModal({ settings, onBack }) {
           {fmtDD(yearPeriodStart)} – {fmtDD(yearPeriodEnd)} &nbsp;|&nbsp;
           <strong>{monthsElapsed}</strong> / 12 months elapsed
         </div>
-        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
           <div className="benefit-stat">
             <span className="benefit-stat-label">Recuperation Days (Year {currentYearNum})</span>
             <span className="benefit-stat-value">{daysEntitled}</span>
@@ -148,7 +148,7 @@ export default function BenefitsModal({ settings, onBack }) {
 
     vacationContent = (
       <>
-        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
           <div className="benefit-stat">
             <span className="benefit-stat-label">Vacation Days (Year {sen.years + 1})</span>
             <span className="benefit-stat-value">{vacDays}</span>
