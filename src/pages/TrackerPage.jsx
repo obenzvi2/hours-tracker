@@ -208,8 +208,9 @@ export default function TrackerPage() {
 
   // ── Logout ─────────────────────────────────────────────
   async function handleLogout() {
-    await flushMonthSave(year, month, monthData, pensionChecked)
-    await signOut()
+    try { await flushMonthSave(year, month, monthData, pensionChecked) } catch(e) {}
+    try { await signOut() } catch(e) {}
+    window.location.href = '/'
   }
 
   // ── Print ──────────────────────────────────────────────
