@@ -194,7 +194,7 @@ export default function BenefitsModal({ settings, onBack }) {
       </div>
 
       <div className="benefit-card">
-        <div className="benefit-card-title">🌴 Recuperation Pay</div>
+        <div className="benefit-card-title">🌴 Recuperation Pay (דמי הבראה)</div>
         {recuperationContent}
       </div>
 
