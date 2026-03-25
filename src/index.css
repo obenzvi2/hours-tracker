@@ -199,6 +199,15 @@ thead th.col-pay { background: #1246a0; }
 .benefit-stat.highlight .benefit-stat-value { color: #fff; font-size: 1.1rem; }
 .benefit-stat.highlight .benefit-stat-unit  { color: rgba(255,255,255,.65); font-size: .68rem; }
 .pension-section-label { font-size: .72rem; font-weight: 700; color: #1a5fb4; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.pension-rows { background: #fff; border-radius: 12px; border: 1px solid #e8eef8; overflow: hidden; margin-bottom: 16px; }
+.pension-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; font-size: .95rem; }
+.pension-row:not(:last-child) { border-bottom: 1px solid #f0f4fb; }
+.pension-row-label { color: #555; }
+.pension-row-value { font-weight: 700; color: #1a1a2e; }
+.pension-divider { height: 2px; background: #e0e8f4; }
+.pension-row-total { background: #eef4ff; }
+.pension-row-total .pension-row-label { font-weight: 700; color: #1a5fb4; }
+.pension-row-total .pension-row-value { font-size: 1.1rem; color: #1a5fb4; }
 .benefit-note {
   font-size: .78rem; color: #888; background: #f7faff; border-radius: 8px;
   padding: 10px 14px; border-left: 3px solid #c8d8ed; line-height: 1.5;

@@ -267,38 +267,24 @@ export default function BenefitsModal({ settings, onBack }) {
                 Formula: {avgDailyHours.toFixed(2)} hrs/day × 6 days × 4.33 weeks × ₪{hourlyRate}/hr = {fmtShekel(grossSalary)}
               </div>
 
-              {/* Employer breakdown */}
-              <div className="pension-section-label">Employer Contributions</div>
-              <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-                <div className="benefit-stat">
-                  <span className="benefit-stat-label">Employer Contribution</span>
-                  <span className="benefit-stat-value">{fmtShekel(empContrib)}</span>
-                  <span className="benefit-stat-unit">6.5% of gross</span>
+              {/* Pension rows */}
+              <div className="pension-rows">
+                <div className="pension-row">
+                  <span className="pension-row-label">Employer Contribution (6.5%)</span>
+                  <span className="pension-row-value">{fmtShekel(empContrib)}</span>
                 </div>
-                <div className="benefit-stat">
-                  <span className="benefit-stat-label">Severance Fund</span>
-                  <span className="benefit-stat-value">{fmtShekel(empSeverance)}</span>
-                  <span className="benefit-stat-unit">6% of gross</span>
+                <div className="pension-row">
+                  <span className="pension-row-label">Employee Deduction (6%)</span>
+                  <span className="pension-row-value">{fmtShekel(employeeDeduct)}</span>
                 </div>
-                <div className="benefit-stat highlight">
-                  <span className="benefit-stat-label">Employer Total</span>
-                  <span className="benefit-stat-value">{fmtShekel(employerTotal)}</span>
-                  <span className="benefit-stat-unit">12.5% of gross</span>
+                <div className="pension-row">
+                  <span className="pension-row-label">Severance Fund (6%)</span>
+                  <span className="pension-row-value">{fmtShekel(empSeverance)}</span>
                 </div>
-              </div>
-
-              {/* Employee + Grand total */}
-              <div className="pension-section-label" style={{ marginTop: 6 }}>Employee Deduction & Grand Total</div>
-              <div className="benefit-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div className="benefit-stat">
-                  <span className="benefit-stat-label">Employee Deduction</span>
-                  <span className="benefit-stat-value">{fmtShekel(employeeDeduct)}</span>
-                  <span className="benefit-stat-unit">6% of gross (from salary)</span>
-                </div>
-                <div className="benefit-stat highlight">
-                  <span className="benefit-stat-label">Total to Pension Fund</span>
-                  <span className="benefit-stat-value">{fmtShekel(pensionTotal)}</span>
-                  <span className="benefit-stat-unit">18.5% of gross / month</span>
+                <div className="pension-divider" />
+                <div className="pension-row pension-row-total">
+                  <span className="pension-row-label">Total to Pension Fund (18.5%)</span>
+                  <span className="pension-row-value">{fmtShekel(pensionTotal)}</span>
                 </div>
               </div>
 
