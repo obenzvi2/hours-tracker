@@ -277,7 +277,7 @@ export default function BenefitsModal({ settings, onBack }) {
                   <span className="pension-row-label">Employee Deduction (6%)</span>
                   <span className="pension-row-value">{fmtShekel(employeeDeduct)}</span>
                 </div>
-                <div className="pension-row">
+                <div className="pension-row pension-row-severance">
                   <span className="pension-row-label">Severance Fund (6%)</span>
                   <span className="pension-row-value">{fmtShekel(empSeverance)}</span>
                 </div>

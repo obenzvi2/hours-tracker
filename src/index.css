@@ -205,6 +205,8 @@ thead th.col-pay { background: #1246a0; }
 .pension-row-label { color: #555; }
 .pension-row-value { font-weight: 700; color: #1a1a2e; }
 .pension-divider { height: 2px; background: #e0e8f4; }
+.pension-row-severance .pension-row-label { color: #e67e22; }
+.pension-row-severance .pension-row-value { color: #e67e22; }
 .pension-row-subtotal { background: #f5f8ff; }
 .pension-row-subtotal .pension-row-label { font-weight: 600; color: #1a5fb4; }
 .pension-row-subtotal .pension-row-value { color: #1a5fb4; }
