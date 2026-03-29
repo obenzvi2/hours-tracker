@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { sb } from '../lib/supabase'
+import React from 'react'
+import Header from './Header'
 
 const RECUPERATION_DAY_RATE = 418
 
@@ -41,46 +41,14 @@ function fmtDD(d) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`
 }
 
-function calcHoursFromEntry(entry) {
-  if (!entry.start || !entry.end) return null
-  const [sh, sm] = entry.start.split(':').map(Number)
-  const [eh, em] = entry.end.split(':').map(Number)
-  const h = (eh * 60 + em - sh * 60 - sm) / 60
-  return h > 0 ? h : null
-}
 
-export default function BenefitsModal({ settings, onBack }) {
+// ── Fixed schedule constants ─────────────────────────
+const WEEKLY_HOURS    = 28          // Sun–Thu 5h × 5 + Fri 3h
+const WEEKS_PER_MONTH = 4.33
+const MONTHLY_HOURS   = WEEKLY_HOURS * WEEKS_PER_MONTH // 121.24
+
+export default function BenefitsModal({ settings, view, onNavigate, onLogout, onPrint, userEmail }) {
   const sen = calcSeniority(settings.workerStartDate)
-
-  // ── Pension: load last 12 months ──────────────────────
-  const [pensionLoading, setPensionLoading] = useState(true)
-  const [avgDailyHours, setAvgDailyHours]   = useState(null)
-  const [monthsWithData, setMonthsWithData] = useState(0)
-
-  useEffect(() => {
-    async function loadLast12Months() {
-      const now  = new Date()
-      const keys = []
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        keys.push(`${d.getFullYear()}_${d.getMonth()}`)
-      }
-      const { data } = await sb.from('month_hours').select('days').in('month_key', keys)
-      let totalHours = 0, totalDays = 0, monthsFound = 0
-      for (const row of (data || [])) {
-        let hadDay = false
-        for (const entry of Object.values(row.days || {})) {
-          const h = calcHoursFromEntry(entry)
-          if (h !== null) { totalHours += h; totalDays++; hadDay = true }
-        }
-        if (hadDay) monthsFound++
-      }
-      if (totalDays > 0) setAvgDailyHours(totalHours / totalDays)
-      setMonthsWithData(monthsFound)
-      setPensionLoading(false)
-    }
-    loadLast12Months()
-  }, [])
 
   // Seniority section
   let seniorityContent
@@ -219,13 +187,13 @@ export default function BenefitsModal({ settings, onBack }) {
 
   return (
     <div className="page-wrapper">
-      <div className="benefits-header">
-        <div>
-          <div className="benefits-title">📊 Social Benefits</div>
-          <div className="benefits-subtitle">Calculated per Israeli labor law for domestic workers</div>
-        </div>
-        <button className="btn-back" onClick={onBack}>← Back</button>
-      </div>
+      <Header
+        view={view}
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        onPrint={onPrint}
+        userEmail={userEmail}
+      />
 
       <div className="benefit-card">
         <div className="benefit-card-title">📅 Seniority</div>
@@ -244,27 +212,58 @@ export default function BenefitsModal({ settings, onBack }) {
 
       <div className="benefit-card">
         <div className="benefit-card-title">🏦 Pension (פנסיה)</div>
-        {pensionLoading ? (
-          <p className="no-startdate">Calculating…</p>
-        ) : avgDailyHours === null ? (
-          <p className="no-startdate">No work hours found in the last 12 months. Enter hours in the tracker first.</p>
-        ) : (() => {
-          const hourlyRate      = settings.hourlyRate || 70
-          const grossSalary     = Math.round(avgDailyHours * 6 * 4.33 * hourlyRate)
-          const empContrib      = Math.round(grossSalary * 0.065)   // employer 6.5%
-          const empSeverance    = Math.round(grossSalary * 0.06)    // employer severance 6%
-          const employerTotal   = Math.round(grossSalary * 0.125)   // employer total 12.5%
-          const employeeDeduct  = Math.round(grossSalary * 0.06)    // employee 6%
-          const pensionTotal    = Math.round(grossSalary * 0.185)   // grand total 18.5%
+
+        {(() => {
+          const rawRate   = parseFloat(settings.hourlyRate)
+          const hourlyRate = (!isNaN(rawRate) && rawRate > 0) ? rawRate : null
+
+          // ── Empty state ───────────────────────────────────────────
+          if (!hourlyRate) return (
+            <div style={{ textAlign: 'center', padding: '28px 0' }}>
+              <div style={{ fontSize: '2rem', marginBottom: 10 }}>⚠️</div>
+              <p className="no-startdate" style={{ marginBottom: 14 }}>
+                Please set an hourly rate in Settings to calculate pension.
+              </p>
+              <div className="pension-rows" style={{ maxWidth: 340, margin: '0 auto 0' }}>
+                {['Employer Contribution (6.5%)','Employee Deduction (6%)','Severance Fund (6%)','Employer Total (12.5%)','Total to Pension Fund (18.5%)'].map(label => (
+                  <div key={label} className="pension-row pension-row-bold">
+                    <span className="pension-row-label">{label}</span>
+                    <span className="pension-row-value" style={{ color: '#ccc' }}>—</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+
+          // ── Calculations ────────────────────────────────────────
+          const rawGross        = MONTHLY_HOURS * hourlyRate
+          const gross           = Math.round(rawGross)
+          const empContrib      = Math.round(gross * 0.065)
+          const empSeverance    = Math.round(gross * 0.06)
+          const employerTotal   = Math.round(gross * 0.125)
+          const employeeDeduct  = Math.round(gross * 0.06)
+          const pensionTotal    = Math.round(gross * 0.185)
+
           return (
             <>
-              <div style={{ background: '#eef4ff', borderRadius: 10, padding: '10px 16px', marginBottom: 14, fontSize: '.83rem', color: '#333', lineHeight: 1.6 }}>
-                <strong>Based on {monthsWithData} months of data</strong> &nbsp;|&nbsp;
-                Avg daily hours: <strong>{avgDailyHours.toFixed(2)}</strong> &nbsp;|&nbsp;
-                Estimated gross salary: <strong>{fmtShekel(grossSalary)}</strong> / month
-              </div>
-              <div style={{ fontSize: '.75rem', color: '#888', marginBottom: 10 }}>
-                Formula: {avgDailyHours.toFixed(2)} hrs/day × 6 days × 4.33 weeks × ₪{hourlyRate}/hr = {fmtShekel(grossSalary)}
+              {/* Fixed salary summary banner */}
+              <div style={{
+                background: '#eef4ff', borderRadius: 10, padding: '12px 16px',
+                marginBottom: 14, lineHeight: 1.7
+              }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1a5fb4' }}>
+                    {fmtShekel(gross)}
+                  </span>
+                  <span style={{ fontSize: '.85rem', color: '#555', fontWeight: 600 }}>fixed monthly gross salary</span>
+                </div>
+                <div style={{ fontSize: '.78rem', color: '#777', marginTop: 4 }}>
+                  Basis: {WEEKLY_HOURS} regular hours/week × {WEEKS_PER_MONTH} weeks × ₪{hourlyRate}/hour
+                  &nbsp;(Sun–Thu: 5h/day · Fri: 3h)
+                </div>
+                <div style={{ fontSize: '.75rem', color: '#999', marginTop: 3, fontStyle: 'italic' }}>
+                  Fixed schedule — not based on actual tracked hours
+                </div>
               </div>
 
               {/* Pension rows */}
@@ -292,9 +291,11 @@ export default function BenefitsModal({ settings, onBack }) {
                 </div>
               </div>
 
-              <div className="benefit-note">
-                Pension rates (domestic workers, Israel 2026): Employer — 6.5% contribution + 6% severance = 12.5%. Employee — 6% deduction.<br />
-                <em>Gross salary estimated from avg daily hours × 6 days/week × 4.33 weeks/month × hourly rate (set in ⚙️ Settings).</em>
+              <div className="benefit-note" style={{ marginTop: 14 }}>
+                Pension rates (domestic workers, Israel 2026): Employer — 6.5% contribution + 6% severance = 12.5% total.
+                Employee — 6% deduction. Grand total deposited to pension fund: 18.5%.<br />
+                <em>Calculation is based on the agreed regular work schedule only.
+                Transportation reimbursement and extra hours are not included in the pension base.</em>
               </div>
             </>
           )

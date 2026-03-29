@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Header from './Header'
 
 function autoFormatDate(raw) {
   let v = raw.replace(/[^0-9]/g, '')
@@ -8,7 +9,7 @@ function autoFormatDate(raw) {
   return v
 }
 
-export default function SettingsModal({ settings, onSave, onBack }) {
+export default function SettingsModal({ settings, onSave, view, onNavigate, onLogout, onPrint, userEmail }) {
   const [form, setForm] = useState({ ...settings })
 
   useEffect(() => {
@@ -58,10 +59,13 @@ export default function SettingsModal({ settings, onSave, onBack }) {
 
   return (
     <div className="page-wrapper">
-      <div className="settings-header">
-        <div className="settings-title">⚙️ Settings</div>
-        <button className="btn-back" onClick={onBack}>← Back</button>
-      </div>
+      <Header
+        view={view}
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        onPrint={onPrint}
+        userEmail={userEmail}
+      />
 
       {/* Employer Details */}
       <div className="settings-section">
@@ -170,13 +174,6 @@ export default function SettingsModal({ settings, onSave, onBack }) {
       <div className="settings-section">
         <div style={{ display: 'flex', gap: 12 }}>
           <button className="btn-save-settings" onClick={handleSave}>✓ Save Settings</button>
-          <button
-            className="btn-save-settings"
-            onClick={onBack}
-            style={{ background: 'rgba(26,95,180,.15)', color: '#1a5fb4', boxShadow: 'none', border: '2px solid #1a5fb4' }}
-          >
-            ← Back
-          </button>
         </div>
       </div>
     </div>

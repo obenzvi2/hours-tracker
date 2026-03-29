@@ -241,28 +241,36 @@ export default function TrackerPage() {
         <SettingsModal
           settings={settings}
           onSave={handleSaveSettings}
-          onBack={() => setView('main')}
+          view={view}
+          onNavigate={v => setView(v)}
+          onLogout={handleLogout}
+          onPrint={handlePrint}
+          userEmail={userEmail}
         />
       )}
 
       {view === 'benefits' && (
         <BenefitsModal
           settings={settings}
-          onBack={() => setView('main')}
+          view={view}
+          onNavigate={v => setView(v)}
+          onLogout={handleLogout}
+          onPrint={handlePrint}
+          userEmail={userEmail}
         />
       )}
 
       {view === 'main' && (
         <div className="page-wrapper">
           <Header
+            view={view}
+            onNavigate={v => setView(v)}
             year={year}
             month={month}
             navLoading={navLoading}
             onPrev={() => navigateMonth(-1)}
             onNext={() => navigateMonth(1)}
             onPrint={handlePrint}
-            onOpenSettings={() => setView('settings')}
-            onOpenBenefits={() => setView('benefits')}
             onLogout={handleLogout}
             userEmail={userEmail}
           />

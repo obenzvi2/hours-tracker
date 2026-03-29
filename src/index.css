@@ -56,6 +56,25 @@ body {
 .month-nav button:disabled { opacity: .4; cursor: not-allowed; }
 .month-title { font-size: 1.25rem; font-weight: 700; min-width: 160px; text-align: center; transition: opacity .2s; }
 
+/* ── HEADER NAV ── */
+.header-nav {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.12); padding: 6px 10px; border-radius: 50px;
+}
+.nav-btn {
+  background: transparent; border: 1.5px solid rgba(255,255,255,.35);
+  color: rgba(255,255,255,.85); border-radius: 30px; padding: 6px 16px;
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.nav-btn:hover { background: rgba(255,255,255,.2); color: #fff; border-color: rgba(255,255,255,.6); }
+.nav-btn-active {
+  background: #fff; color: #1a5fb4 !important;
+  border-color: #fff !important; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.nav-btn-active:hover { background: #fff; }
+
 /* ── TABLE ── */
 .card {
   background: #fff; border-radius: 16px;
@@ -70,10 +89,11 @@ tbody tr:hover:not(.row-saturday) { background: #f5f8ff; }
 td { padding: 8px 10px; text-align: center; vertical-align: middle; }
 .col-day  { text-align: left; padding-left: 14px; font-weight: 600; min-width: 80px; }
 .col-date { color: #555; min-width: 90px; font-size: .85rem; }
+thead th.col-date { color: #fff; }
 .col-hours { font-weight: 700; color: #1a5fb4; min-width: 80px; font-size: 1rem; background: #eef4ff; }
-thead th.col-hours { background: #1246a0; }
+thead th.col-hours { background: #1a5fb4; color: #fff; }
 .col-pay { min-width: 80px; background: #f1f8f1; }
-thead th.col-pay { background: #1246a0; }
+thead th.col-pay { background: #1a5fb4; color: #fff; }
 .pay-input {
   background: transparent; border: 1px solid transparent;
   border-radius: 6px; color: #2e7d32; font-weight: 700; font-size: .9rem;
