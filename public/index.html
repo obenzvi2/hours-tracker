@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Hours Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4fb;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    /* ── LOGIN ── */
+    #loginView {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 40px rgba(26,95,180,.18);
+    }
+    .login-logo { text-align: center; margin-bottom: 28px; }
+    .login-logo-icon  { font-size: 2.4rem; }
+    .login-logo-title { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 8px; }
+    .login-logo-sub   { font-size: .82rem; color: #888; margin-top: 4px; }
+    .login-error {
+      display: none; background: #fff5f5; border: 1px solid #fbb;
+      border-radius: 8px; padding: 10px 14px;
+      color: #c0392b; font-size: .85rem; margin-bottom: 14px;
+    }
+    .login-field { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .login-field input {
+      border: 1.5px solid #d0dae8; border-radius: 10px;
+      padding: 12px 14px; font-size: .95rem; font-family: inherit;
+      color: #1a1a2e; background: #f7faff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .login-field input:focus {
+      outline: none; border-color: #3584e4;
+      box-shadow: 0 0 0 3px rgba(53,132,228,.15); background: #fff;
+    }
+    .btn-login {
+      width: 100%; background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 13px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .btn-login:hover    { opacity: .92; }
+    .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── APP LOADING ── */
+    #appLoading {
+      display: none; position: fixed; inset: 0;
+      background: #f0f4fb; z-index: 9999;
+      align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid #d0dae8; border-top-color: #3584e4;
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: .9rem; color: #888; }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border-radius: 16px; padding: 20px 24px;
+      margin-bottom: 20px; box-shadow: 0 4px 16px rgba(26,95,180,.35);
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .header-top {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .app-title { font-size: 1.5rem; font-weight: 700; }
+    .btn-settings {
+      background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff; border-radius: 10px; padding: 7px 16px; font-size: .85rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-settings:hover { background: rgba(255,255,255,.35); }
+
+    .month-nav {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(255,255,255,.15); padding: 10px 20px; border-radius: 50px;
+    }
+    .month-nav button {
+      background: rgba(255,255,255,.25); border: none; color: #fff;
+      width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .month-nav button:hover    { background: rgba(255,255,255,.45); }
+    .month-nav button:disabled { opacity: .4; cursor: not-allowed; }
+    .month-title { font-size: 1.25rem; font-weight: 700; min-width: 160px; text-align: center; transition: opacity .2s; }
+
+    /* ── TABLE ── */
+    .card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08); overflow: hidden; margin-bottom: 20px;
+    }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    thead tr { background: #1a5fb4; color: #fff; }
+    thead th { padding: 12px 10px; font-weight: 600; text-align: center; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #e8eef6; transition: background .15s; }
+    tbody tr:hover:not(.row-saturday) { background: #f5f8ff; }
+    td { padding: 8px 10px; text-align: center; vertical-align: middle; }
+    .col-day  { text-align: left; padding-left: 14px; font-weight: 600; min-width: 80px; }
+    .col-date { color: #555; min-width: 90px; font-size: .85rem; }
+    .col-hours { font-weight: 700; color: #1a5fb4; min-width: 80px; font-size: 1rem; background: #eef4ff; }
+    thead th.col-hours { background: #1246a0; }
+    .col-pay { min-width: 80px; background: #f1f8f1; }
+    thead th.col-pay { background: #1246a0; }
+    .pay-input {
+      background: transparent; border: 1px solid transparent;
+      border-radius: 6px; color: #2e7d32; font-weight: 700; font-size: .9rem;
+      font-family: inherit; width: 74px; text-align: center;
+      padding: 4px 6px; cursor: text; transition: border-color .2s, background .2s;
+    }
+    .pay-input:hover { border-color: #c8d8ed; background: #f7faff; }
+    .pay-input:focus { outline: none; border-color: #3584e4; background: #fff; box-shadow: 0 0 0 3px rgba(53,132,228,.18); }
+    .pay-input.pay-manual { color: #e67e00; border-color: #f0a030 !important; background: #fff9f0; border-width: 1.5px; }
+    .pay-input.pay-manual:focus { border-color: #e67e00 !important; background: #fff; }
+    .col-note { min-width: 130px; }
+    .col-note input[type="text"] {
+      width: 100%; border: 1px solid #d0dae8; border-radius: 6px;
+      padding: 5px 8px; font-size: .82rem; font-family: inherit; text-align: left;
+      color: #333; background: #fafbff; transition: border-color .2s; min-width: 110px;
+    }
+    .col-note input[type="text"]:focus { outline: none; border-color: #3584e4; background: #fff; }
+    .time-input {
+      border: 1.5px solid #c8d8ed; border-radius: 8px; padding: 6px 8px; font-size: .9rem;
+      font-family: inherit; color: #1a1a2e; background: #f7faff; width: 80px;
+      text-align: center; cursor: text; transition: border-color .2s, box-shadow .2s; direction: ltr;
+    }
+    .time-input:focus { outline: none; border-color: #3584e4; box-shadow: 0 0 0 3px rgba(53,132,228,.18); background: #fff; }
+    .time-input:hover { border-color: #3584e4; }
+    .time-input.invalid { border-color: #e74c3c; background: #fff5f5; }
+    .row-saturday { background: #f2f2f2 !important; }
+    .row-saturday td { color: #aaa; font-style: italic; font-size: .85rem; }
+    .sat-label { text-align: center; }
+    .hours-zero { color: #ccc; }
+    .hours-val  { color: #1a73e8; font-weight: 700; font-size: 1rem; }
+
+    /* ── SUMMARY ── */
+    .summary-card {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border-radius: 16px; padding: 20px 24px;
+      box-shadow: 0 4px 16px rgba(26,95,180,.3);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+    }
+    .summary-item {
+      background: rgba(255,255,255,.15); border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .summary-label { font-size: .78rem; opacity: .85; font-weight: 500; }
+    .summary-value { font-size: 1.5rem; font-weight: 800; }
+    .summary-unit  { font-size: .75rem; opacity: .75; }
+
+    /* ── RATES BAR ── */
+    .rates-bar {
+      background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 14px 24px; margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 0;
+    }
+    .rates-bar-item { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+    .rates-bar-label { font-size: .75rem; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: .03em; }
+    .rates-bar-value { font-size: 1.1rem; font-weight: 700; color: #1a5fb4; }
+    .rates-bar-divider { width: 1px; height: 36px; background: #e0e8f4; margin: 0 16px; }
+
+    /* ── BENEFITS ── */
+    #benefitsView { display: none; }
+    .benefits-header {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(26,95,180,.35);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .benefits-title { font-size: 1.4rem; font-weight: 700; }
+    .benefits-subtitle { font-size: .85rem; opacity: .8; margin-top: 4px; }
+    .benefit-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 24px; margin-bottom: 20px;
+    }
+    .benefit-card-title {
+      font-size: 1rem; font-weight: 700; color: #1a5fb4;
+      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #eef4ff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .seniority-display {
+      display: flex; align-items: center; gap: 24px;
+      background: #eef4ff; border-radius: 12px; padding: 16px 20px;
+    }
+    .seniority-num   { font-size: 2.2rem; font-weight: 800; color: #1a5fb4; line-height: 1; }
+    .seniority-label { font-size: .8rem; color: #666; margin-top: 2px; }
+    .seniority-divider { width: 1px; height: 44px; background: #c8d8ed; }
+    .no-startdate { color: #aaa; font-style: italic; font-size: .9rem; }
+    .benefit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .benefit-stat {
+      background: #f7faff; border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .benefit-stat-label { font-size: .75rem; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: .03em; }
+    .benefit-stat-value { font-size: 1.25rem; font-weight: 800; color: #1a5fb4; }
+    .benefit-stat-unit  { font-size: .75rem; color: #aaa; }
+    .benefit-stat.highlight { background: linear-gradient(135deg, #1a5fb4, #3584e4); }
+    .benefit-stat.highlight .benefit-stat-label { color: rgba(255,255,255,.75); }
+    .benefit-stat.highlight .benefit-stat-value { color: #fff; font-size: 1.5rem; }
+    .benefit-stat.highlight .benefit-stat-unit  { color: rgba(255,255,255,.65); }
+    .benefit-note {
+      font-size: .78rem; color: #888; background: #f7faff; border-radius: 8px;
+      padding: 10px 14px; border-left: 3px solid #c8d8ed; line-height: 1.5;
+    }
+    .btn-benefits {
+      background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff; border-radius: 10px; padding: 7px 16px; font-size: .85rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-benefits:hover { background: rgba(255,255,255,.35); }
+
+    /* ── SETTINGS ── */
+    #settingsView { display: none; }
+    .settings-header {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(26,95,180,.35);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .settings-title { font-size: 1.4rem; font-weight: 700; }
+    .btn-back {
+      background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff; border-radius: 10px; padding: 7px 16px; font-size: .85rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-back:hover { background: rgba(255,255,255,.35); }
+    .settings-section {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 24px; margin-bottom: 20px;
+    }
+    .settings-section-title {
+      font-size: 1rem; font-weight: 700; color: #1a5fb4; margin-bottom: 18px;
+      padding-bottom: 10px; border-bottom: 2px solid #eef4ff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .settings-field { display: flex; flex-direction: column; gap: 6px; }
+    .settings-field.full-width { grid-column: 1 / -1; }
+    .settings-field label {
+      font-size: .8rem; font-weight: 600; color: #555;
+      text-transform: uppercase; letter-spacing: .03em;
+    }
+    .settings-field input {
+      border: 1.5px solid #d0dae8; border-radius: 10px; padding: 10px 14px;
+      font-size: .95rem; font-family: inherit; color: #1a1a2e; background: #f7faff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .settings-field input:focus {
+      outline: none; border-color: #3584e4;
+      box-shadow: 0 0 0 3px rgba(53,132,228,.15); background: #fff;
+    }
+    .settings-field input[type="number"] { direction: ltr; text-align: left; }
+    .btn-save-settings {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff; border: none; border-radius: 12px; padding: 13px 32px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px;
+      transition: opacity .2s, transform .1s; box-shadow: 0 4px 14px rgba(26,95,180,.3);
+    }
+    .btn-save-settings:hover  { opacity: .92; }
+    .btn-save-settings:active { transform: scale(.98); }
+
+    /* ── PAYMENT BREAKDOWN ── */
+    .payment-breakdown-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 20px 24px; margin-bottom: 20px;
+    }
+    .pb-title {
+      font-size: 1rem; font-weight: 700; color: #1a5fb4; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 2px solid #eef4ff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pb-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; font-size: .95rem; }
+    .pb-label { color: #555; }
+    .pb-value { font-weight: 700; color: #1a1a2e; }
+    .pb-deduct .pb-label { color: #c0392b; }
+    .pb-deduct .pb-value { color: #c0392b; }
+    .pb-add    .pb-label { color: #27ae60; }
+    .pb-add    .pb-value { color: #27ae60; }
+    .pb-divider { height: 1px; background: #e0e8f4; margin: 6px 0; }
+    .pb-total { background: #eef4ff; border-radius: 10px; padding: 12px 16px !important; margin-top: 6px; }
+    .pb-total .pb-label { font-weight: 700; color: #1a5fb4; font-size: 1rem; }
+    .pb-total .pb-value { font-size: 1.2rem; color: #1a5fb4; }
+    .pb-pension-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .pb-pension-cb { width: 17px; height: 17px; cursor: pointer; accent-color: #1a5fb4; flex-shrink: 0; }
+    .pb-row.pb-deduct.unchecked .pb-label { color: #aaa; text-decoration: line-through; }
+    .pb-row.pb-deduct.unchecked .pb-value { color: #aaa; text-decoration: line-through; }
+    .pb-employer { border-top: 1px dashed #e0e8f4; margin-top: 8px; padding-top: 4px; opacity: .75; }
+    .pb-employer .pb-label { font-size: .85rem; }
+    .pb-employer .pb-value { font-size: .85rem; }
+
+    /* ── MISC ── */
+    #saveIndicator {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #2ec27e; color: #fff; padding: 10px 22px; border-radius: 50px;
+      font-size: .85rem; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2);
+      transition: transform .3s ease; z-index: 999; white-space: nowrap;
+    }
+    #saveIndicator.show { transform: translateX(-50%) translateY(0); }
+    .app-footer { text-align: center; font-size: .75rem; color: #aaa; margin-top: 8px; padding-bottom: 16px; }
+    .print-header { display: none; }
+    .btn-print {
+      background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff; border-radius: 10px; padding: 7px 16px; font-size: .85rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-print:hover { background: rgba(255,255,255,.35); }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .app-title { font-size: 1.2rem; }
+      .month-title { min-width: 130px; font-size: 1.05rem; }
+      .time-input { width: 70px; font-size: .82rem; padding: 5px 4px; }
+      thead th, td { padding: 7px 5px; }
+      .summary-card { grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+      .summary-value { font-size: 1.2rem; }
+      .col-note { display: none; }
+      .col-pay  { min-width: 65px; font-size: .8rem; }
+      .settings-grid { grid-template-columns: 1fr; }
+      #userEmail { display: none !important; }
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .app-header, .rates-bar, .app-footer, #saveIndicator,
+      .btn-settings, .btn-print, .month-nav, .col-note { display: none !important; }
+      .print-header { display: block !important; text-align: center; margin-bottom: 18px; }
+      .print-title { font-size: 1.3rem; font-weight: 700; color: #1a1a2e; }
+      .print-month { font-size: 1rem; color: #555; margin-top: 4px; }
+      .card { box-shadow: none; border: 1px solid #ddd; border-radius: 0; }
+      table { font-size: .85rem; }
+      thead tr { background: #1a5fb4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .col-hours { background: #eef4ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .row-saturday { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .summary-card {
+        display: flex !important; flex-wrap: wrap;
+        background: #1a5fb4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        border-radius: 0; box-shadow: none; page-break-inside: avoid;
+      }
+      .time-input { border: none; background: transparent; font-size: .85rem; }
+      #settingsView, #benefitsView { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ APP LOADING ══ -->
+<div id="appLoading">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading…</div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">📋</div>
+      <div class="login-logo-title">Work Hours Tracker</div>
+      <div class="login-logo-sub">Sign in to access your data</div>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-field">
+      <input type="email"    id="loginEmail"    placeholder="Email address"  autocomplete="email" />
+      <input type="password" id="loginPassword" placeholder="Password"       autocomplete="current-password" />
+    </div>
+    <button class="btn-login" id="btnLogin">Sign In</button>
+  </div>
+</div>
+
+<!-- ══ MAIN VIEW ══ -->
+<div id="mainView" style="display:none;">
+  <div class="app-header">
+    <div class="header-top">
+      <div class="app-title">📋 Work Hours Tracker</div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <span id="userEmail" style="font-size:.8rem; opacity:.75; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+        <button class="btn-print"    id="btnPrint">🖨️ Print</button>
+        <button class="btn-benefits" id="btnOpenBenefits">📊 Benefits</button>
+        <button class="btn-settings" id="btnOpenSettings">⚙️ Settings</button>
+        <button class="btn-settings" id="btnLogout">🚪 Sign Out</button>
+      </div>
+    </div>
+    <div class="month-nav">
+      <button id="prevMonth" title="Previous month">&#8249;</button>
+      <div class="month-title" id="monthTitle">—</div>
+      <button id="nextMonth" title="Next month">&#8250;</button>
+    </div>
+  </div>
+
+  <div class="print-header">
+    <div class="print-title">Work Hours Report</div>
+    <div class="print-month" id="printMonth"></div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-day">Day</th>
+            <th class="col-date">Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th class="col-hours">Hours</th>
+            <th class="col-pay">Pay (₪)</th>
+            <th class="col-note">Note</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-item">
+      <span class="summary-label">Total Monthly Hours</span>
+      <span class="summary-value" id="totalHours">0.00</span>
+      <span class="summary-unit">hours</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Total Pay</span>
+      <span class="summary-value" id="totalSalary">0</span>
+      <span class="summary-unit">₪</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Days Worked</span>
+      <span class="summary-value" id="workDays">0</span>
+      <span class="summary-unit">days</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Avg Hours / Day</span>
+      <span class="summary-value" id="avgHours">0.00</span>
+      <span class="summary-unit">hours</span>
+    </div>
+  </div>
+
+  <div class="payment-breakdown-card">
+    <div class="pb-title">💳 Monthly Payment to Employee</div>
+    <div class="pb-row">
+      <span class="pb-label">Gross Pay (hours × rate)</span>
+      <span class="pb-value" id="pbGross">—</span>
+    </div>
+    <div class="pb-row pb-deduct" id="pbPensionRow">
+      <label class="pb-pension-label pb-label">
+        <input type="checkbox" class="pb-pension-cb" id="cbEmpPension" checked />
+        Employee Pension Deduction (<span id="pbEmpPctLabel">6</span>%)
+      </label>
+      <span class="pb-value" id="pbEmpPension">—</span>
+    </div>
+    <div class="pb-row pb-add">
+      <span class="pb-label">Monthly Travel Allowance</span>
+      <span class="pb-value" id="pbTravel">—</span>
+    </div>
+    <div class="pb-divider"></div>
+    <div class="pb-row pb-total">
+      <span class="pb-label">Net Amount to Pay Employee</span>
+      <span class="pb-value" id="pbNet">—</span>
+    </div>
+    <div class="pb-row pb-employer">
+      <span class="pb-label">🏦 Employer Pension Contribution (<span id="pbEmrPctLabel">12.5</span>%) — paid separately to fund</span>
+      <span class="pb-value" id="pbEmrPension">—</span>
+    </div>
+  </div>
+
+  <div class="rates-bar">
+    <div class="rates-bar-item">
+      <span class="rates-bar-label">Hourly Rate</span>
+      <span class="rates-bar-value"><span id="displayHourlyRate">70</span> ₪</span>
+    </div>
+    <div class="rates-bar-divider"></div>
+    <div class="rates-bar-item">
+      <span class="rates-bar-label">Monthly Travel Allowance</span>
+      <span class="rates-bar-value"><span id="displayTravelAllowance">315</span> ₪</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BENEFITS VIEW ══ -->
+<div id="benefitsView">
+  <div class="benefits-header">
+    <div>
+      <div class="benefits-title">📊 Social Benefits</div>
+      <div class="benefits-subtitle">Calculated per Israeli labor law for domestic workers</div>
+    </div>
+    <button class="btn-back" id="btnBackBenefits">← Back</button>
+  </div>
+  <div class="benefit-card">
+    <div class="benefit-card-title">📅 Seniority</div>
+    <div id="seniorityContent"></div>
+  </div>
+  <div class="benefit-card">
+    <div class="benefit-card-title">🌴 Recuperation Pay</div>
+    <div id="recuperationContent"></div>
+  </div>
+  <div class="benefit-card">
+    <div class="benefit-card-title">🏖️ Annual Vacation</div>
+    <div id="vacationContent"></div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS VIEW ══ -->
+<div id="settingsView">
+  <div class="settings-header">
+    <div class="settings-title">⚙️ Settings</div>
+    <button class="btn-back" id="btnBack">← Back</button>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">🏢 Employer Details</div>
+    <div class="settings-grid">
+      <div class="settings-field"><label>Full Name</label><input type="text" id="empFullName" placeholder="Employer full name" /></div>
+      <div class="settings-field"><label>ID Number</label><input type="text" id="empId" placeholder="000000000" /></div>
+      <div class="settings-field full-width"><label>Address</label><input type="text" id="empAddress" placeholder="Street, City" /></div>
+      <div class="settings-field"><label>Phone</label><input type="text" id="empPhone" placeholder="05X-XXXXXXX" /></div>
+      <div class="settings-field"><label>Email</label><input type="email" id="empEmail" placeholder="email@example.com" /></div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">👤 Employee Details</div>
+    <div class="settings-grid">
+      <div class="settings-field"><label>Full Name</label><input type="text" id="workerFullName" placeholder="Employee full name" /></div>
+      <div class="settings-field"><label>ID Number</label><input type="text" id="workerId" placeholder="000000000" /></div>
+      <div class="settings-field full-width"><label>Address</label><input type="text" id="workerAddress" placeholder="Street, City" /></div>
+      <div class="settings-field"><label>Phone</label><input type="text" id="workerPhone" placeholder="05X-XXXXXXX" /></div>
+      <div class="settings-field"><label>Email</label><input type="email" id="workerEmail" placeholder="email@example.com" /></div>
+      <div class="settings-field"><label>Start Date</label><input type="text" id="workerStartDate" placeholder="DD/MM/YYYY" /></div>
+      <div class="settings-field"><label>Date of Birth</label><input type="text" id="workerDob" placeholder="DD/MM/YYYY" /></div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">💰 Salary Settings</div>
+    <div class="settings-grid">
+      <div class="settings-field"><label>Hourly Rate (₪)</label><input type="number" id="settingsHourlyRate" min="1" max="9999" placeholder="70" /></div>
+      <div class="settings-field"><label>Monthly Travel Allowance (₪)</label><input type="number" id="settingsTravelAllowance" min="0" max="9999" placeholder="315" /></div>
+      <div class="settings-field"><label>Employment Scope (%)</label><input type="number" id="settingsEmploymentPct" min="1" max="100" placeholder="100" /></div>
+      <div class="settings-field"><label>Vacation Day Rate (₪)</label><input type="number" id="settingsVacationDayRate" min="1" max="9999" placeholder="350" /></div>
+      <div class="settings-field"><label>Employer Pension Contribution (%)</label><input type="number" id="settingsEmployerPensionPct" min="0" max="100" step="0.1" placeholder="12.5" /></div>
+      <div class="settings-field"><label>Employee Pension Deduction (%)</label><input type="number" id="settingsEmployeePensionPct" min="0" max="100" step="0.1" placeholder="6" /></div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div style="display:flex; gap:12px;">
+      <button class="btn-save-settings" id="btnSaveSettings">✓ Save Settings</button>
+      <button class="btn-save-settings" id="btnBackBottom" style="background:rgba(26,95,180,.15);color:#1a5fb4;box-shadow:none;border:2px solid #1a5fb4;">← Back</button>
+    </div>
+  </div>
+</div>
+
+<div id="saveIndicator">✓ Saved</div>
+<div class="app-footer">Data securely stored in the cloud ☁️</div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<script>
+  // ══════════════════════════════════════════════════════
+  //  SUPABASE CONFIG — replace with your project values
+  //  (Supabase Dashboard → Project Settings → API)
+  // ══════════════════════════════════════════════════════
+  const SUPABASE_URL      = 'https://rdbyewhpnhplpjxmwxtd.supabase.co
+';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYnlld2hwbmhwbHBqeG13eHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNjkzODksImV4cCI6MjA4OTg0NTM4OX0._fbPBRDWocoDzLOVVb_FG-SOzziLVq6nwTlKjUfJx34';
+
+  const { createClient } = window.supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── Constants ──────────────────────────────────────────
+  const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS_EN   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const RECUPERATION_DAY_RATE = 418;
+
+  const now = new Date();
+  let curYear  = now.getFullYear();
+  let curMonth = now.getMonth();
+
+  // ── Settings ───────────────────────────────────────────
+  const DEFAULT_SETTINGS = {
+    empFullName:'', empId:'', empAddress:'', empPhone:'', empEmail:'',
+    workerFullName:'', workerId:'', workerAddress:'', workerPhone:'', workerEmail:'',
+    workerStartDate:'', workerDob:'',
+    hourlyRate:70, travelAllowance:315, employmentPct:100,
+    vacationDayRate:350, employerPensionPct:12.5, employeePensionPct:6
+  };
+  let settings = { ...DEFAULT_SETTINGS };
+
+  // ── Month state ────────────────────────────────────────
+  let monthData           = {};   // current month's day entries
+  let monthPensionChecked = true;
+  const monthCache        = {};   // key: "YYYY_M" → { days, pensionChecked }
+
+  // ── Supabase data helpers ──────────────────────────────
+  async function loadSettingsFromDB() {
+    const { data, error } = await sb
+      .from('user_settings')
+      .select('settings')
+      .maybeSingle();
+    if (error) { console.warn('loadSettings:', error); return; }
+    settings = data ? { ...DEFAULT_SETTINGS, ...data.settings } : { ...DEFAULT_SETTINGS };
+  }
+
+  async function saveSettingsToDB() {
+    const { error } = await sb
+      .from('user_settings')
+      .upsert({ settings }, { onConflict: 'user_id' });
+    if (error) console.warn('saveSettings:', error);
+  }
+
+  async function loadMonthFromDB(y, m) {
+    const key = `${y}_${m}`;
+    if (monthCache[key]) {
+      monthData           = monthCache[key].days;
+      monthPensionChecked = monthCache[key].pensionChecked;
+      return;
+    }
+    const { data, error } = await sb
+      .from('month_hours')
+      .select('days, pension_checked')
+      .eq('month_key', key)
+      .maybeSingle();
+    if (error) { console.warn('loadMonth:', error); }
+    monthData           = data ? (data.days || {}) : {};
+    monthPensionChecked = data ? data.pension_checked !== false : true;
+    monthCache[key]     = { days: monthData, pensionChecked: monthPensionChecked };
+  }
+
+  // For benefits: load any month without changing current state
+  async function loadMonthForBenefits(y, m) {
+    const key = `${y}_${m}`;
+    if (monthCache[key]) return monthCache[key].days || {};
+    const { data } = await sb
+      .from('month_hours')
+      .select('days, pension_checked')
+      .eq('month_key', key)
+      .maybeSingle();
+    const days          = data ? (data.days || {}) : {};
+    const pensionChecked = data ? data.pension_checked !== false : true;
+    monthCache[key]     = { days, pensionChecked };
+    return days;
+  }
+
+  // Debounced save of current month
+  let saveDebounce = null;
+  let savePending  = false;
+
+  function scheduleMonthSave() {
+    savePending = true;
+    const key = `${curYear}_${curMonth}`;
+    monthCache[key] = { days: monthData, pensionChecked: monthPensionChecked };
+    clearTimeout(saveDebounce);
+    saveDebounce = setTimeout(async () => {
+      savePending = false;
+      const { error } = await sb.from('month_hours').upsert({
+        month_key:       key,
+        days:            monthData,
+        pension_checked: monthPensionChecked,
+        updated_at:      new Date().toISOString()
+      }, { onConflict: 'user_id,month_key' });
+      if (error) console.warn('saveMonth:', error);
+      else flashSaved();
+    }, 600);
+  }
+
+  async function flushMonthSave() {
+    if (!savePending) return;
+    clearTimeout(saveDebounce);
+    saveDebounce = null;
+    savePending  = false;
+    const { error } = await sb.from('month_hours').upsert({
+      month_key:       `${curYear}_${curMonth}`,
+      days:            monthData,
+      pension_checked: monthPensionChecked,
+      updated_at:      new Date().toISOString()
+    }, { onConflict: 'user_id,month_key' });
+    if (error) console.warn('flushSave:', error);
+  }
+
+  // ── Sync-compatible wrappers (used by table/render code) ──
+  function saveMonth(y, m, data) {
+    if (y === curYear && m === curMonth) monthData = data;
+    scheduleMonthSave();
+  }
+
+  function savePensionChecked(y, m, val) {
+    if (y === curYear && m === curMonth) monthPensionChecked = val;
+    scheduleMonthSave();
+  }
+
+  // ── Auth ───────────────────────────────────────────────
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session) {
+      document.getElementById('appLoading').style.display = 'flex';
+      document.getElementById('loginView').style.display  = 'none';
+      try {
+        await loadSettingsFromDB();
+        await loadMonthFromDB(curYear, curMonth);
+      } catch(e) { console.warn('init:', e); }
+      document.getElementById('appLoading').style.display = 'none';
+      document.getElementById('userEmail').textContent    = session.user.email;
+      updateRatesBar();
+      showMain();
+      render();
+    } else {
+      document.getElementById('appLoading').style.display  = 'none';
+      document.getElementById('mainView').style.display    = 'none';
+      document.getElementById('settingsView').style.display = 'none';
+      document.getElementById('benefitsView').style.display = 'none';
+      document.getElementById('loginView').style.display   = 'flex';
+    }
+  });
+
+  // Login
+  document.getElementById('btnLogin').addEventListener('click', async () => {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl    = document.getElementById('loginError');
+    const btn      = document.getElementById('btnLogin');
+    errEl.style.display = 'none';
+    if (!email || !password) {
+      errEl.textContent = 'Please enter your email and password.';
+      errEl.style.display = 'block'; return;
+    }
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      errEl.textContent = error.message === 'Invalid login credentials'
+        ? 'Incorrect email or password.' : error.message;
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  });
+
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btnLogin').click();
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await flushMonthSave();
+    await sb.auth.signOut();
+  });
+
+  // ── Settings ───────────────────────────────────────────
+  function updateRatesBar() {
+    document.getElementById('displayHourlyRate').textContent      = settings.hourlyRate;
+    document.getElementById('displayTravelAllowance').textContent = settings.travelAllowance;
+  }
+
+  function populateSettingsForm() {
+    document.getElementById('empFullName').value             = settings.empFullName;
+    document.getElementById('empId').value                  = settings.empId;
+    document.getElementById('empAddress').value             = settings.empAddress;
+    document.getElementById('empPhone').value               = settings.empPhone;
+    document.getElementById('empEmail').value               = settings.empEmail;
+    document.getElementById('workerFullName').value         = settings.workerFullName;
+    document.getElementById('workerId').value               = settings.workerId;
+    document.getElementById('workerAddress').value          = settings.workerAddress;
+    document.getElementById('workerPhone').value            = settings.workerPhone;
+    document.getElementById('workerEmail').value            = settings.workerEmail;
+    document.getElementById('workerStartDate').value        = settings.workerStartDate;
+    document.getElementById('workerDob').value              = settings.workerDob;
+    document.getElementById('settingsHourlyRate').value     = settings.hourlyRate;
+    document.getElementById('settingsTravelAllowance').value = settings.travelAllowance;
+    document.getElementById('settingsEmploymentPct').value  = settings.employmentPct;
+    document.getElementById('settingsVacationDayRate').value    = settings.vacationDayRate;
+    document.getElementById('settingsEmployerPensionPct').value = settings.employerPensionPct;
+    document.getElementById('settingsEmployeePensionPct').value = settings.employeePensionPct;
+  }
+
+  function autoFormatDate(e) {
+    const inp = e.target;
+    let v = inp.value.replace(/[^0-9]/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length >= 5)      v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+    else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    inp.value = v;
+  }
+  ['workerStartDate','workerDob'].forEach(id => document.getElementById(id).addEventListener('input', autoFormatDate));
+
+  document.getElementById('btnSaveSettings').addEventListener('click', () => {
+    const rate   = parseFloat(document.getElementById('settingsHourlyRate').value);
+    const travel = parseFloat(document.getElementById('settingsTravelAllowance').value);
+    const empPct = parseFloat(document.getElementById('settingsEmploymentPct').value);
+    const vacRate= parseFloat(document.getElementById('settingsVacationDayRate').value);
+    settings = {
+      empFullName:    document.getElementById('empFullName').value.trim(),
+      empId:          document.getElementById('empId').value.trim(),
+      empAddress:     document.getElementById('empAddress').value.trim(),
+      empPhone:       document.getElementById('empPhone').value.trim(),
+      empEmail:       document.getElementById('empEmail').value.trim(),
+      workerFullName: document.getElementById('workerFullName').value.trim(),
+      workerId:       document.getElementById('workerId').value.trim(),
+      workerAddress:  document.getElementById('workerAddress').value.trim(),
+      workerPhone:    document.getElementById('workerPhone').value.trim(),
+      workerEmail:    document.getElementById('workerEmail').value.trim(),
+      workerStartDate:document.getElementById('workerStartDate').value.trim(),
+      workerDob:      document.getElementById('workerDob').value.trim(),
+      hourlyRate:      (!isNaN(rate)    && rate    > 0)                    ? rate    : DEFAULT_SETTINGS.hourlyRate,
+      travelAllowance: (!isNaN(travel)  && travel  >= 0)                   ? travel  : DEFAULT_SETTINGS.travelAllowance,
+      employmentPct:   (!isNaN(empPct)  && empPct  >= 1 && empPct  <= 100) ? empPct  : DEFAULT_SETTINGS.employmentPct,
+      vacationDayRate: (!isNaN(vacRate) && vacRate > 0)                    ? vacRate : DEFAULT_SETTINGS.vacationDayRate,
+      employerPensionPct: (() => { const v = parseFloat(document.getElementById('settingsEmployerPensionPct').value); return (!isNaN(v) && v >= 0 && v <= 100) ? v : DEFAULT_SETTINGS.employerPensionPct; })(),
+      employeePensionPct: (() => { const v = parseFloat(document.getElementById('settingsEmployeePensionPct').value); return (!isNaN(v) && v >= 0 && v <= 100) ? v : DEFAULT_SETTINGS.employeePensionPct; })(),
+    };
+    saveSettingsToDB().catch(console.warn);
+    flashSaved(); updateRatesBar(); render();
+  });
+
+  // ── View switching ──────────────────────────────────────
+  function showMain() {
+    document.getElementById('mainView').style.display    = 'block';
+    document.getElementById('settingsView').style.display = 'none';
+    document.getElementById('benefitsView').style.display = 'none';
+  }
+  function showSettings() {
+    populateSettingsForm();
+    document.getElementById('mainView').style.display    = 'none';
+    document.getElementById('settingsView').style.display = 'block';
+    document.getElementById('benefitsView').style.display = 'none';
+  }
+  function showBenefits() {
+    document.getElementById('mainView').style.display    = 'none';
+    document.getElementById('settingsView').style.display = 'none';
+    document.getElementById('benefitsView').style.display = 'block';
+    renderBenefits();
+  }
+
+  document.getElementById('btnPrint').addEventListener('click', () => {
+    document.getElementById('printMonth').textContent = `${MONTHS_EN[curMonth]} ${curYear}`;
+    window.print();
+  });
+  document.getElementById('btnOpenSettings').addEventListener('click', showSettings);
+  document.getElementById('btnOpenBenefits').addEventListener('click', showBenefits);
+  document.getElementById('btnBack').addEventListener('click', showMain);
+  document.getElementById('btnBackBottom').addEventListener('click', showMain);
+  document.getElementById('btnBackBenefits').addEventListener('click', showMain);
+
+  // ── Benefits ───────────────────────────────────────────
+  function parseIsraeliDate(str) {
+    if (!str || str.length < 8) return null;
+    const p = str.split('/');
+    if (p.length !== 3) return null;
+    const d = parseInt(p[0]), m = parseInt(p[1]) - 1, y = parseInt(p[2]);
+    if (isNaN(d) || isNaN(m) || isNaN(y) || y < 1900) return null;
+    return new Date(y, m, d);
+  }
+  function calcSeniority(startStr) {
+    const start = parseIsraeliDate(startStr);
+    if (!start) return null;
+    const today = new Date();
+    if (start > today) return null;
+    let years = today.getFullYear() - start.getFullYear();
+    let months = today.getMonth() - start.getMonth();
+    if (today.getDate() < start.getDate()) months--;
+    if (months < 0) { years--; months += 12; }
+    if (years < 0) return null;
+    return { years, months, totalMonths: years * 12 + months };
+  }
+  function getRecuperationDays(years) {
+    if (years >= 19) return 10; if (years >= 15) return 9;
+    if (years >= 10) return 8;  if (years >= 3)  return 7;
+    if (years >= 1)  return 6;  return 5;
+  }
+  function getVacationDays(years) {
+    if (years >= 6) return 21; if (years >= 5) return 18;
+    if (years >= 4) return 16; return 14;
+  }
+  function fmtShekel(n) { return '₪' + Math.round(n).toLocaleString('en-IL'); }
+
+  async function renderBenefits() {
+    const s   = settings;
+    const sen = calcSeniority(s.workerStartDate);
+
+    // Seniority
+    const senEl = document.getElementById('seniorityContent');
+    if (!sen) {
+      senEl.innerHTML = `<p class="no-startdate">Start date not set. Please add it in ⚙️ Settings → Employee Details.</p>`;
+    } else {
+      senEl.innerHTML = `
+        <div class="seniority-display">
+          <div><div class="seniority-num">${sen.years}</div><div class="seniority-label">Years</div></div>
+          <div class="seniority-divider"></div>
+          <div><div class="seniority-num">${sen.months}</div><div class="seniority-label">Months</div></div>
+          <div class="seniority-divider"></div>
+          <div><div class="seniority-num">${sen.totalMonths}</div><div class="seniority-label">Total months</div></div>
+        </div>
+        <p style="font-size:.8rem;color:#999;margin-top:10px;">Start date: ${s.workerStartDate} &nbsp;|&nbsp; As of today: ${new Date().toLocaleDateString('en-GB')}</p>`;
+    }
+
+    // Recuperation Pay
+    const recEl = document.getElementById('recuperationContent');
+    if (!sen) {
+      recEl.innerHTML = `<p class="no-startdate">Requires start date in Settings.</p>`;
+    } else {
+      const start          = parseIsraeliDate(s.workerStartDate);
+      const today          = new Date();
+      const currentYearNum = sen.years + 1;
+      const yearPeriodStart = sen.years === 0 ? start : new Date(start.getFullYear() + sen.years, start.getMonth(), start.getDate());
+      const yearPeriodEnd   = new Date(start.getFullYear() + sen.years + 1, start.getMonth(), start.getDate());
+      const daysEntitled    = getRecuperationDays(sen.years);
+      let monthsElapsed     = (today.getFullYear() - yearPeriodStart.getFullYear()) * 12 + (today.getMonth() - yearPeriodStart.getMonth());
+      if (today.getDate() < yearPeriodStart.getDate()) monthsElapsed--;
+      monthsElapsed = Math.max(0, Math.min(12, monthsElapsed));
+      const empPct         = s.employmentPct || 100;
+      const empFactor      = empPct / 100;
+      const annualTotal    = daysEntitled * RECUPERATION_DAY_RATE * empFactor;
+      const monthlyAccrual = annualTotal / 12;
+      const accruedSoFar   = monthlyAccrual * monthsElapsed;
+      const fmtDD = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+      recEl.innerHTML = `
+        <div style="background:#eef4ff;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:.83rem;color:#333;line-height:1.6;">
+          <strong>Year ${currentYearNum} of employment</strong> &nbsp;|&nbsp;
+          ${fmtDD(yearPeriodStart)} – ${fmtDD(yearPeriodEnd)} &nbsp;|&nbsp;
+          <strong>${monthsElapsed}</strong> / 12 months elapsed
+        </div>
+        <div class="benefit-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="benefit-stat"><span class="benefit-stat-label">Recuperation Days (Year ${currentYearNum})</span><span class="benefit-stat-value">${daysEntitled}</span><span class="benefit-stat-unit">days per full year</span></div>
+          <div class="benefit-stat"><span class="benefit-stat-label">Employment Scope</span><span class="benefit-stat-value">${empPct}%</span><span class="benefit-stat-unit">set in ⚙️ Settings</span></div>
+          <div class="benefit-stat"><span class="benefit-stat-label">Monthly Accrual</span><span class="benefit-stat-value">${fmtShekel(monthlyAccrual)}</span><span class="benefit-stat-unit">₪ / month</span></div>
+          <div class="benefit-stat highlight"><span class="benefit-stat-label">Accrued to Date</span><span class="benefit-stat-value">${fmtShekel(accruedSoFar)}</span><span class="benefit-stat-unit">${monthsElapsed} months × ${fmtShekel(monthlyAccrual)}</span></div>
+        </div>
+        <div class="benefit-stat" style="margin-bottom:14px;"><span class="benefit-stat-label">Annual Total (${daysEntitled} days × ₪${RECUPERATION_DAY_RATE} × ${empPct}%)</span><span class="benefit-stat-value">${fmtShekel(annualTotal)}</span><span class="benefit-stat-unit">₪ per full year</span></div>
+        <div class="benefit-note">Recuperation pay is paid once a year, typically around July–August. Rate: ₪${RECUPERATION_DAY_RATE}/day (private sector, 2026) for 100% employment scope. Days: 5 (year 1) → 6 (years 2–3) → 7 (years 4–10) → 8 (years 11–15) → 9 (years 16–19) → 10 (year 20+).<br><em>To update employment scope: ⚙️ Settings → Salary Settings → Employment Scope.</em></div>`;
+    }
+
+    // Annual Vacation
+    const vacEl = document.getElementById('vacationContent');
+    if (!sen) {
+      vacEl.innerHTML = `<p class="no-startdate">Requires start date in Settings.</p>`;
+    } else {
+      const vacDays         = getVacationDays(sen.years);
+      const dailyRate       = s.vacationDayRate || 350;
+      const annualVacValue  = vacDays * dailyRate;
+      const monthlyVacValue = annualVacValue / 12;
+      vacEl.innerHTML = `
+        <div class="benefit-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="benefit-stat"><span class="benefit-stat-label">Vacation Days (Year ${sen.years + 1})</span><span class="benefit-stat-value">${vacDays}</span><span class="benefit-stat-unit">days per year</span></div>
+          <div class="benefit-stat"><span class="benefit-stat-label">Daily Rate</span><span class="benefit-stat-value">${fmtShekel(dailyRate)}</span><span class="benefit-stat-unit">set in ⚙️ Settings</span></div>
+          <div class="benefit-stat"><span class="benefit-stat-label">Monthly Accrual</span><span class="benefit-stat-value">${fmtShekel(monthlyVacValue)}</span><span class="benefit-stat-unit">₪ / month</span></div>
+          <div class="benefit-stat highlight"><span class="benefit-stat-label">Annual Value</span><span class="benefit-stat-value">${fmtShekel(annualVacValue)}</span><span class="benefit-stat-unit">${vacDays} days × ₪${dailyRate}</span></div>
+        </div>
+        <div class="benefit-note">Annual leave by law (Annual Leave Law): 14 days (years 1–3) → 16 days (year 4) → 18 days (year 5) → 21 days (year 6+).<br><em>To update daily rate: ⚙️ Settings → Salary Settings → Vacation Day Rate.</em></div>`;
+    }
+  }
+
+  // ── Table ──────────────────────────────────────────────
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  function calcHours(start, end) {
+    if (!start || !end) return null;
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    const diff = (eh*60+em) - (sh*60+sm);
+    return diff > 0 ? diff / 60 : null;
+  }
+  function fmtDecimal(h) { return h === null ? null : h.toFixed(2); }
+  function fmtDate(d, m, y) { return `${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`; }
+
+  function render() {
+    document.getElementById('monthTitle').textContent = `${MONTHS_EN[curMonth]} ${curYear}`;
+    const totalDays = daysInMonth(curYear, curMonth);
+    const tbody     = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    let totalMinutes = 0, workedDays = 0, totalPay = 0;
+
+    for (let day = 1; day <= totalDays; day++) {
+      const dow   = new Date(curYear, curMonth, day).getDay();
+      const tr    = document.createElement('tr');
+      const entry = monthData[String(day)] || {};
+
+      if (dow === 6) {
+        tr.className = 'row-saturday';
+        const satPay = (entry.payOverride !== undefined && entry.payOverride !== '') ? entry.payOverride : '';
+        if (satPay) totalPay += parseFloat(satPay) || 0;
+        tr.innerHTML = `
+          <td class="col-day">${DAYS_EN[dow]}</td>
+          <td class="col-date">${fmtDate(day, curMonth, curYear)}</td>
+          <td colspan="3" class="sat-label">Day Off</td>
+          <td class="col-pay" id="p_${day}"><input type="text" inputmode="numeric" class="pay-input${satPay ? ' pay-manual' : ''}" value="${satPay}" data-day="${day}" data-auto="" placeholder="—" /></td>
+          <td class="col-note"><input type="text" placeholder="Note..." value="${entry.note||''}" data-day="${day}" data-field="note" maxlength="40" /></td>`;
+      } else {
+        const h = calcHours(entry.start||'', entry.end||'');
+        if (h !== null) { totalMinutes += Math.round(h*60); workedDays++; }
+        const hoursDisplay   = h !== null ? `<span class="hours-val">${fmtDecimal(h)}</span>` : `<span class="hours-zero">—</span>`;
+        const autoPayVal     = h !== null ? Math.round(h * settings.hourlyRate) : '';
+        const overridePayVal = (entry.payOverride !== undefined && entry.payOverride !== '') ? entry.payOverride : null;
+        const displayPayVal  = overridePayVal !== null ? overridePayVal : autoPayVal;
+        const isManualPay    = overridePayVal !== null;
+        if (overridePayVal !== null) totalPay += parseFloat(overridePayVal) || 0;
+        else if (h !== null)         totalPay += h * settings.hourlyRate;
+        tr.innerHTML = `
+          <td class="col-day">${DAYS_EN[dow]}</td>
+          <td class="col-date">${fmtDate(day, curMonth, curYear)}</td>
+          <td><input type="text" class="time-input" placeholder="--:--" maxlength="5" value="${entry.start||''}" data-day="${day}" data-field="start" /></td>
+          <td><input type="text" class="time-input" placeholder="--:--" maxlength="5" value="${entry.end||''}"   data-day="${day}" data-field="end"   /></td>
+          <td class="col-hours" id="h_${day}">${hoursDisplay}</td>
+          <td class="col-pay"   id="p_${day}"><input type="text" inputmode="numeric" class="pay-input${isManualPay ? ' pay-manual' : ''}" value="${displayPayVal}" data-day="${day}" data-auto="${autoPayVal}" placeholder="—" title="${isManualPay ? 'Manual value — clear to restore auto-calculation' : 'Click to edit manually'}" /></td>
+          <td class="col-note"><input type="text" placeholder="Note..." value="${entry.note||''}" data-day="${day}" data-field="note" maxlength="40" /></td>`;
+      }
+      tbody.appendChild(tr);
+    }
+    tbody.querySelectorAll('.time-input').forEach(i => {
+      i.addEventListener('input',   onTimeInput);
+      i.addEventListener('blur',    onTimeBlur);
+      i.addEventListener('keydown', onTimeEnter);
+      i.addEventListener('focus',   e => e.target.select());
+    });
+    tbody.querySelectorAll('.col-note input[type="text"]').forEach(i => i.addEventListener('input', onFieldChange));
+    tbody.querySelectorAll('.pay-input').forEach(i => {
+      i.addEventListener('change', onPayChange);
+      i.addEventListener('focus',  e => e.target.select());
+    });
+    updateSummary(totalMinutes, workedDays, totalPay);
+    applyPensionCheckbox();
+  }
+
+  // ── Time handling ──────────────────────────────────────
+  function isValidTime(val) { return /^([01]\d|2[0-3]):([0-5]\d)$/.test(val); }
+  let deletingTime = false;
+
+  function onTimeEnter(e) {
+    if (e.key === 'Backspace' || e.key === 'Delete') { deletingTime = true; return; }
+    deletingTime = false;
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const day = parseInt(e.target.dataset.day), field = e.target.dataset.field;
+    let next;
+    if (field === 'start') {
+      next = document.querySelector(`.time-input[data-day="${day}"][data-field="end"]`);
+    } else {
+      for (let d = day + 1; d <= daysInMonth(curYear, curMonth); d++) {
+        const c = document.querySelector(`.time-input[data-day="${d}"][data-field="start"]`);
+        if (c) { next = c; break; }
+      }
+    }
+    if (next) next.focus();
+  }
+
+  function onTimeInput(e) {
+    const inp = e.target;
+    let v = inp.value.replace(/[^0-9:]/g, '');
+    if (!deletingTime && v.length === 2 && !v.includes(':')) v += ':';
+    if (v.length > 5) v = v.slice(0, 5);
+    inp.value = v; deletingTime = false;
+    inp.classList.toggle('invalid', v.length === 5 && !isValidTime(v));
+    if (isValidTime(v)) triggerTimeChange(inp);
+  }
+
+  function onTimeBlur(e) {
+    const inp = e.target, v = inp.value.trim();
+    if (v === '') { inp.classList.remove('invalid'); triggerTimeChange(inp); return; }
+    if (!isValidTime(v)) { inp.classList.add('invalid'); return; }
+    if (inp.dataset.field === 'end') {
+      const start = (monthData[inp.dataset.day] || {}).start || '';
+      if (!start) { inp.classList.add('invalid'); return; }
+    }
+    inp.classList.remove('invalid'); triggerTimeChange(inp);
+  }
+
+  function triggerTimeChange(inp) {
+    const day = inp.dataset.day, field = inp.dataset.field;
+    if (!monthData[day]) monthData[day] = {};
+    monthData[day][field] = inp.value;
+    const h    = calcHours(monthData[day].start||'', monthData[day].end||'');
+    const cell = document.getElementById(`h_${day}`);
+    if (cell) cell.innerHTML = h !== null ? `<span class="hours-val">${fmtDecimal(h)}</span>` : `<span class="hours-zero">—</span>`;
+    const payInp = document.querySelector(`#p_${day} .pay-input`);
+    if (payInp) {
+      const newAuto = h !== null ? Math.round(h * settings.hourlyRate) : '';
+      payInp.dataset.auto = newAuto;
+      const isManual = (monthData[day] || {}).payOverride !== undefined && (monthData[day] || {}).payOverride !== '';
+      if (!isManual) { payInp.value = newAuto; payInp.title = 'Click to edit manually'; }
+    }
+    recalcSummary(); saveMonth(curYear, curMonth, monthData);
+  }
+
+  function onPayChange(e) {
+    const inp = e.target, day = inp.dataset.day, autoV = inp.dataset.auto, val = inp.value.trim();
+    if (!monthData[day]) monthData[day] = {};
+    if (val === '' || val === String(autoV)) {
+      delete monthData[day].payOverride;
+      inp.classList.remove('pay-manual'); inp.title = 'Click to edit manually';
+      if (autoV !== '') inp.value = autoV;
+    } else if (!isNaN(parseFloat(val)) && isFinite(val)) {
+      monthData[day].payOverride = val;
+      inp.classList.add('pay-manual'); inp.title = 'Manual value — clear to restore auto-calculation';
+    } else { inp.value = autoV || ''; }
+    recalcSummary(); saveMonth(curYear, curMonth, monthData);
+  }
+
+  function onFieldChange(e) {
+    const day = e.target.dataset.day, field = e.target.dataset.field;
+    if (!monthData[day]) monthData[day] = {};
+    monthData[day][field] = e.target.value;
+    saveMonth(curYear, curMonth, monthData);
+  }
+
+  function recalcSummary() {
+    let totalMinutes = 0, workedDays = 0, totalPay = 0;
+    for (let day = 1; day <= daysInMonth(curYear, curMonth); day++) {
+      const entry  = monthData[String(day)] || {};
+      const isSat  = new Date(curYear, curMonth, day).getDay() === 6;
+      const hasOvr = entry.payOverride !== undefined && entry.payOverride !== '';
+      if (!isSat) {
+        const h = calcHours(entry.start||'', entry.end||'');
+        if (h !== null) { totalMinutes += Math.round(h*60); workedDays++; }
+        if (hasOvr)          totalPay += parseFloat(entry.payOverride) || 0;
+        else if (h !== null) totalPay += h * settings.hourlyRate;
+      } else {
+        if (hasOvr) totalPay += parseFloat(entry.payOverride) || 0;
+      }
+    }
+    updateSummary(totalMinutes, workedDays, totalPay);
+  }
+
+  function updateSummary(totalMinutes, workedDays, totalPay) {
+    const totalHoursVal = totalMinutes / 60;
+    const avg = workedDays > 0 ? totalHoursVal / workedDays : 0;
+    document.getElementById('totalHours').textContent  = fmtDecimal(totalHoursVal) || '0.00';
+    document.getElementById('totalSalary').textContent = Math.round(totalPay).toLocaleString('en-IL');
+    document.getElementById('workDays').textContent    = workedDays;
+    document.getElementById('avgHours').textContent    = fmtDecimal(avg) || '0.00';
+    updatePaymentBreakdown(Math.round(totalPay));
+  }
+
+  function updatePaymentBreakdown(grossPay) {
+    const empPct    = settings.employeePensionPct || 6;
+    const emrPct    = settings.employerPensionPct || 12.5;
+    const travel    = settings.travelAllowance    || 0;
+    const cb        = document.getElementById('cbEmpPension');
+    const pensionOn = cb ? cb.checked : true;
+    const empPension = pensionOn ? Math.round(grossPay * empPct / 100) : 0;
+    const emrPension = Math.round(grossPay * emrPct / 100);
+    const netPay     = grossPay - empPension + travel;
+    const fmt = n => '₪' + Math.round(n).toLocaleString('en-IL');
+    document.getElementById('pbEmpPctLabel').textContent = empPct;
+    document.getElementById('pbEmrPctLabel').textContent = emrPct;
+    document.getElementById('pbGross').textContent       = fmt(grossPay);
+    document.getElementById('pbEmpPension').textContent  = pensionOn ? '− ' + fmt(empPension) : '—';
+    document.getElementById('pbTravel').textContent      = '+ ' + fmt(travel);
+    document.getElementById('pbNet').textContent         = fmt(netPay);
+    document.getElementById('pbEmrPension').textContent  = fmt(emrPension);
+    const row = document.getElementById('pbPensionRow');
+    if (row) row.classList.toggle('unchecked', !pensionOn);
+  }
+
+  function applyPensionCheckbox() {
+    const cb = document.getElementById('cbEmpPension');
+    if (!cb) return;
+    cb.checked = monthPensionChecked;
+    const row = document.getElementById('pbPensionRow');
+    if (row) row.classList.toggle('unchecked', !cb.checked);
+  }
+
+  document.getElementById('cbEmpPension').addEventListener('change', function() {
+    savePensionChecked(curYear, curMonth, this.checked);
+    const grossEl = document.getElementById('pbGross');
+    if (grossEl) updatePaymentBreakdown(parseInt(grossEl.textContent.replace(/[^0-9]/g, '')) || 0);
+  });
+
+  // ── Flash saved ────────────────────────────────────────
+  let saveFlashTimer;
+  function flashSaved() {
+    const el = document.getElementById('saveIndicator');
+    el.classList.add('show');
+    clearTimeout(saveFlashTimer);
+    saveFlashTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  // ── Month navigation ───────────────────────────────────
+  function setNavLoading(on) {
+    document.getElementById('prevMonth').disabled = on;
+    document.getElementById('nextMonth').disabled = on;
+    document.getElementById('monthTitle').style.opacity = on ? '0.4' : '1';
+  }
+
+  document.getElementById('prevMonth').addEventListener('click', async () => {
+    await flushMonthSave();
+    if (--curMonth < 0) { curMonth = 11; curYear--; }
+    setNavLoading(true);
+    await loadMonthFromDB(curYear, curMonth);
+    setNavLoading(false);
+    render();
+  });
+
+  document.getElementById('nextMonth').addEventListener('click', async () => {
+    await flushMonthSave();
+    if (++curMonth > 11) { curMonth = 0; curYear++; }
+    setNavLoading(true);
+    await loadMonthFromDB(curYear, curMonth);
+    setNavLoading(false);
+    render();
+  });
+
+</script>
+</body>
+</html>

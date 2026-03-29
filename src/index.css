@@ -306,6 +306,33 @@ thead th.col-pay { background: #1246a0; }
   outline: none; border-color: #3584e4;
   box-shadow: 0 0 0 3px rgba(53,132,228,.15); background: #fff;
 }
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper input {
+  padding-right: 44px;
+  width: 100%;
+}
+/* Hide native browser password reveal button */
+.password-wrapper input::-ms-reveal,
+.password-wrapper input::-webkit-credentials-auto-fill-button { display: none; }
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #aab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s;
+}
+.password-toggle:hover { color: #3584e4; }
+.password-toggle svg { width: 18px; height: 18px; }
 .btn-login {
   width: 100%; background: linear-gradient(135deg, #1a5fb4, #3584e4);
   color: #fff; border: none; border-radius: 12px;

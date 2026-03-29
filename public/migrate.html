@@ -1,292 +1,511 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Migrate Data — Work Hours Tracker</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4fb; color: #1a1a2e; min-height: 100vh; padding: 24px 16px; }
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,.1); padding: 32px; max-width: 600px; margin: 0 auto; }
-    .header { background: linear-gradient(135deg, #1a5fb4, #3584e4); color: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; text-align: center; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; }
-    .header p  { font-size: .85rem; opacity: .8; margin-top: 6px; }
-    label { font-size: .8rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .03em; display: block; margin-bottom: 6px; }
-    input[type="email"], input[type="password"] {
-      width: 100%; border: 1.5px solid #d0dae8; border-radius: 10px;
-      padding: 11px 14px; font-size: .95rem; font-family: inherit;
-      color: #1a1a2e; background: #f7faff; margin-bottom: 14px; transition: border-color .2s;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: #3584e4; background: #fff; }
-    .btn { width: 100%; background: linear-gradient(135deg, #1a5fb4, #3584e4); color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .2s; margin-bottom: 10px; }
-    .btn:hover    { opacity: .92; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .alert { border-radius: 10px; padding: 12px 16px; font-size: .875rem; margin-bottom: 16px; line-height: 1.5; }
-    .alert.error   { background: #fff5f5; border: 1px solid #fbb; color: #c0392b; }
-    .alert.success { background: #f0faf4; border: 1px solid #b6e3c6; color: #1e7e4a; }
-    .alert.info    { background: #eef4ff; border: 1px solid #c8d8ed; color: #1a5fb4; }
-    #loginSection, #migrateSection, #doneSection { display: none; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4fb;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .1);
+      padding: 32px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      font-size: .85rem;
+      opacity: .8;
+      margin-top: 6px;
+    }
+
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      border: 1.5px solid #d0dae8;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: .95rem;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #f7faff;
+      margin-bottom: 14px;
+      transition: border-color .2s;
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #3584e4;
+      background: #fff;
+    }
+
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1a5fb4, #3584e4);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+      margin-bottom: 10px;
+    }
+
+    .btn:hover {
+      opacity: .92;
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: .875rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .alert.error {
+      background: #fff5f5;
+      border: 1px solid #fbb;
+      color: #c0392b;
+    }
+
+    .alert.success {
+      background: #f0faf4;
+      border: 1px solid #b6e3c6;
+      color: #1e7e4a;
+    }
+
+    .alert.info {
+      background: #eef4ff;
+      border: 1px solid #c8d8ed;
+      color: #1a5fb4;
+    }
+
+    #loginSection,
+    #migrateSection,
+    #doneSection {
+      display: none;
+    }
+
     .file-drop {
-      border: 2px dashed #c8d8ed; border-radius: 12px; padding: 32px; text-align: center;
-      cursor: pointer; transition: border-color .2s, background .2s; margin-bottom: 16px;
+      border: 2px dashed #c8d8ed;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin-bottom: 16px;
     }
-    .file-drop:hover, .file-drop.drag-over { border-color: #3584e4; background: #eef4ff; }
-    .file-drop-icon { font-size: 2rem; margin-bottom: 8px; }
-    .file-drop-text { font-size: .9rem; color: #666; }
-    .file-drop-sub  { font-size: .78rem; color: #aaa; margin-top: 4px; }
-    #fileInput { display: none; }
-    .progress-wrap { background: #f0f4fb; border-radius: 8px; overflow: hidden; margin: 16px 0; height: 8px; display: none; }
-    .progress-bar  { height: 100%; background: linear-gradient(90deg, #1a5fb4, #3584e4); border-radius: 8px; transition: width .3s; width: 0%; }
-    .log { background: #f7faff; border: 1px solid #e0e8f4; border-radius: 8px; padding: 12px 14px; font-size: .78rem; color: #555; max-height: 260px; overflow-y: auto; display: none; font-family: monospace; line-height: 1.6; }
-    .log .ok   { color: #27ae60; }
-    .log .warn { color: #e67e00; }
-    .log .err  { color: #c0392b; }
-    .user-bar { background: #eef4ff; border-radius: 10px; padding: 10px 14px; font-size: .85rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .user-bar span { color: #1a5fb4; font-weight: 600; }
-    .btn-sm { background: transparent; border: 1.5px solid #1a5fb4; color: #1a5fb4; border-radius: 8px; padding: 5px 12px; font-size: .8rem; cursor: pointer; font-family: inherit; font-weight: 600; }
-    .btn-sm:hover { background: #eef4ff; }
-    h2 { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; }
-    .divider { height: 1px; background: #e8eef6; margin: 20px 0; }
-    p { color: #555; font-size: .9rem; line-height: 1.6; }
+
+    .file-drop:hover,
+    .file-drop.drag-over {
+      border-color: #3584e4;
+      background: #eef4ff;
+    }
+
+    .file-drop-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .file-drop-text {
+      font-size: .9rem;
+      color: #666;
+    }
+
+    .file-drop-sub {
+      font-size: .78rem;
+      color: #aaa;
+      margin-top: 4px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .progress-wrap {
+      background: #f0f4fb;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+      height: 8px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #1a5fb4, #3584e4);
+      border-radius: 8px;
+      transition: width .3s;
+      width: 0%;
+    }
+
+    .log {
+      background: #f7faff;
+      border: 1px solid #e0e8f4;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .78rem;
+      color: #555;
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+      font-family: monospace;
+      line-height: 1.6;
+    }
+
+    .log .ok {
+      color: #27ae60;
+    }
+
+    .log .warn {
+      color: #e67e00;
+    }
+
+    .log .err {
+      color: #c0392b;
+    }
+
+    .user-bar {
+      background: #eef4ff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: .85rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .user-bar span {
+      color: #1a5fb4;
+      font-weight: 600;
+    }
+
+    .btn-sm {
+      background: transparent;
+      border: 1.5px solid #1a5fb4;
+      color: #1a5fb4;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: .8rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .btn-sm:hover {
+      background: #eef4ff;
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e8eef6;
+      margin: 20px 0;
+    }
+
+    p {
+      color: #555;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
   </style>
 </head>
+
 <body>
-<div class="card">
-  <div class="header">
-    <h1>📦 Data Migration Tool</h1>
-    <p>Import your existing JSON data into Supabase — run once</p>
-  </div>
-
-  <div id="loadingSection" style="text-align:center; padding:20px 0; color:#888;">Checking authentication…</div>
-
-  <div id="loginSection">
-    <h2>Sign in to your account</h2>
-    <div class="alert error" id="loginError" style="display:none;"></div>
-    <label>Email</label>
-    <input type="email"    id="loginEmail"    placeholder="your@email.com" autocomplete="email" />
-    <label>Password</label>
-    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" />
-    <button class="btn" id="btnLogin">Sign In</button>
-  </div>
-
-  <div id="migrateSection">
-    <div class="user-bar" id="userBar">
-      Signed in as <span id="userEmail"></span>
-      <button class="btn-sm" id="btnSignOut">Sign out</button>
+  <div class="card">
+    <div class="header">
+      <h1>📦 Data Migration Tool</h1>
+      <p>Import your existing JSON data into Supabase — run once</p>
     </div>
 
-    <h2>Upload your data file</h2>
-    <p>Select the JSON file from the original app (<code>מעקב_שעות_נתונים.json</code>).</p>
-    <div class="divider"></div>
+    <div id="loadingSection" style="text-align:center; padding:20px 0; color:#888;">Checking authentication…</div>
 
-    <div class="alert info">
-      ⚠️ This will <strong>overwrite</strong> any existing data in Supabase for your account. Only run this once.
-    </div>
-    <div class="alert error"   id="alertError"   style="display:none;"></div>
-    <div class="alert success" id="alertSuccess" style="display:none;"></div>
-
-    <div class="file-drop" id="fileDrop">
-      <div class="file-drop-icon">📂</div>
-      <div class="file-drop-text">Click to choose file or drag &amp; drop</div>
-      <div class="file-drop-sub">JSON file exported from Work Hours Tracker</div>
-      <input type="file" id="fileInput" accept=".json,application/json" />
+    <div id="loginSection">
+      <h2>Sign in to your account</h2>
+      <div class="alert error" id="loginError" style="display:none;"></div>
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" />
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" />
+      <button class="btn" id="btnLogin">Sign In</button>
     </div>
 
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-bar" id="progressBar"></div>
+    <div id="migrateSection">
+      <div class="user-bar" id="userBar">
+        Signed in as <span id="userEmail"></span>
+        <button class="btn-sm" id="btnSignOut">Sign out</button>
+      </div>
+
+      <h2>Upload your data file</h2>
+      <p>Select the JSON file from the original app (<code>מעקב_שעות_נתונים.json</code>).</p>
+      <div class="divider"></div>
+
+      <div class="alert info">
+        ⚠️ This will <strong>overwrite</strong> any existing data in Supabase for your account. Only run this once.
+      </div>
+      <div class="alert error" id="alertError" style="display:none;"></div>
+      <div class="alert success" id="alertSuccess" style="display:none;"></div>
+
+      <div class="file-drop" id="fileDrop">
+        <div class="file-drop-icon">📂</div>
+        <div class="file-drop-text">Click to choose file or drag &amp; drop</div>
+        <div class="file-drop-sub">JSON file exported from Work Hours Tracker</div>
+        <input type="file" id="fileInput" accept=".json,application/json" />
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <button class="btn" id="btnMigrate" disabled>⬆️ Start Migration</button>
+      <div class="log" id="log"></div>
     </div>
 
-    <button class="btn" id="btnMigrate" disabled>⬆️ Start Migration</button>
-    <div class="log" id="log"></div>
+    <div id="doneSection" style="text-align:center; padding:12px 0; display:none;">
+      <div style="font-size:3rem; margin-bottom:16px;">✅</div>
+      <h2 style="margin-bottom:8px;">Migration Complete!</h2>
+      <p>All your data has been uploaded to Supabase.<br>You can now use the app normally.</p>
+      <div class="divider"></div>
+      <a href="index.html"><button class="btn" style="width:auto; padding:12px 32px;">Open App →</button></a>
+    </div>
   </div>
 
-  <div id="doneSection" style="text-align:center; padding:12px 0; display:none;">
-    <div style="font-size:3rem; margin-bottom:16px;">✅</div>
-    <h2 style="margin-bottom:8px;">Migration Complete!</h2>
-    <p>All your data has been uploaded to Supabase.<br>You can now use the app normally.</p>
-    <div class="divider"></div>
-    <a href="index.html"><button class="btn" style="width:auto; padding:12px 32px;">Open App →</button></a>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    // ── Same config as index.html ──────────────────────────
+    const SUPABASE_URL = 'https://uzralvvfiazcnfmmspjv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6cmFsdnZmaWF6Y25mbW1zcGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODA1OTQsImV4cCI6MjA4OTg1NjU5NH0.E6Z1IjX6csBi3PPoK3JADEjKhz7hHK-Fd8UQ9j0ewGM';
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-  // ── Same config as index.html ──────────────────────────
-  const SUPABASE_URL      = 'https://uzralvvfiazcnfmmspjv.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6cmFsdnZmaWF6Y25mbW1zcGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODA1OTQsImV4cCI6MjA4OTg1NjU5NH0.E6Z1IjX6csBi3PPoK3JADEjKhz7hHK-Fd8UQ9j0ewGM';
+    const { createClient } = window.supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const { createClient } = window.supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let parsedFile = null;
 
-  let parsedFile = null;
-
-  // ── Auth state ─────────────────────────────────────────
-  sb.auth.onAuthStateChange((event, session) => {
-    document.getElementById('loadingSection').style.display = 'none';
-    if (session) {
-      document.getElementById('loginSection').style.display   = 'none';
-      document.getElementById('migrateSection').style.display = 'block';
-      document.getElementById('userEmail').textContent        = session.user.email;
-    } else {
-      document.getElementById('loginSection').style.display   = 'block';
-      document.getElementById('migrateSection').style.display = 'none';
-    }
-  });
-
-  // ── Login ──────────────────────────────────────────────
-  document.getElementById('btnLogin').addEventListener('click', async () => {
-    const email    = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const errEl    = document.getElementById('loginError');
-    errEl.style.display = 'none';
-    if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = 'block'; return; }
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; }
-  });
-  document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btnLogin').click(); });
-  document.getElementById('btnSignOut').addEventListener('click', () => sb.auth.signOut());
-
-  // ── File picker ────────────────────────────────────────
-  const fileDrop   = document.getElementById('fileDrop');
-  const fileInput  = document.getElementById('fileInput');
-  const btnMigrate = document.getElementById('btnMigrate');
-
-  fileDrop.addEventListener('click', () => fileInput.click());
-  fileDrop.addEventListener('dragover',  e => { e.preventDefault(); fileDrop.classList.add('drag-over'); });
-  fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag-over'));
-  fileDrop.addEventListener('drop', e => { e.preventDefault(); fileDrop.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-  fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
-
-  function handleFile(file) {
-    const errEl = document.getElementById('alertError');
-    errEl.style.display = 'none';
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        parsedFile = JSON.parse(e.target.result);
-        fileDrop.querySelector('.file-drop-text').textContent = `✓ ${file.name}`;
-        fileDrop.querySelector('.file-drop-sub').textContent  = `${Object.keys(parsedFile).length} keys found`;
-        fileDrop.style.borderColor = '#2ec27e';
-        fileDrop.style.background  = '#f0faf4';
-        btnMigrate.disabled = false;
-      } catch {
-        errEl.textContent = 'Could not parse JSON. Please check the file is valid.';
-        errEl.style.display = 'block';
-        parsedFile = null; btnMigrate.disabled = true;
+    // ── Auth state ─────────────────────────────────────────
+    sb.auth.onAuthStateChange((event, session) => {
+      document.getElementById('loadingSection').style.display = 'none';
+      if (session) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('migrateSection').style.display = 'block';
+        document.getElementById('userEmail').textContent = session.user.email;
+      } else {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('migrateSection').style.display = 'none';
       }
-    };
-    reader.readAsText(file);
-  }
-
-  // ── Migration ──────────────────────────────────────────
-  function logLine(msg, type = '') {
-    const logEl = document.getElementById('log');
-    logEl.style.display = 'block';
-    const line = document.createElement('div');
-    if (type) line.className = type;
-    line.textContent = msg;
-    logEl.appendChild(line);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  function setProgress(pct) {
-    document.getElementById('progressWrap').style.display = 'block';
-    document.getElementById('progressBar').style.width    = pct + '%';
-  }
-
-  btnMigrate.addEventListener('click', async () => {
-    if (!parsedFile) return;
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-
-    document.getElementById('alertError').style.display   = 'none';
-    document.getElementById('alertSuccess').style.display = 'none';
-    document.getElementById('log').innerHTML = '';
-    document.getElementById('log').style.display = 'none';
-
-    btnMigrate.disabled   = true;
-    btnMigrate.textContent = '⏳ Migrating…';
-
-    // Parse keys
-    const settingsRaw = parsedFile['wh_settings'] || null;
-    const monthKeys   = Object.keys(parsedFile).filter(k => /^wh_\d{4}_\d+$/.test(k));
-    const pensionKeys = Object.keys(parsedFile).filter(k => /^wh_pension_\d{4}_\d+$/.test(k));
-
-    // Build pension lookup: "2025_6" → bool
-    const pensionMap = {};
-    pensionKeys.forEach(pk => {
-      const m = pk.match(/^wh_pension_(\d{4})_(\d+)$/);
-      if (m) pensionMap[`${m[1]}_${m[2]}`] = parsedFile[pk] !== 'false';
     });
 
-    const total = (settingsRaw ? 1 : 0) + monthKeys.length;
-    let done = 0;
+    // ── Login ──────────────────────────────────────────────
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = 'block'; return; }
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; }
+    });
+    document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btnLogin').click(); });
+    document.getElementById('btnSignOut').addEventListener('click', () => sb.auth.signOut());
 
-    logLine(`Found: ${settingsRaw ? '1 settings, ' : ''}${monthKeys.length} month(s), ${pensionKeys.length} pension record(s)`);
+    // ── File picker ────────────────────────────────────────
+    const fileDrop = document.getElementById('fileDrop');
+    const fileInput = document.getElementById('fileInput');
+    const btnMigrate = document.getElementById('btnMigrate');
 
-    try {
-      // 1. Settings
-      if (settingsRaw) {
-        logLine('Uploading settings…');
-        let settingsObj;
-        try { settingsObj = typeof settingsRaw === 'string' ? JSON.parse(settingsRaw) : settingsRaw; }
-        catch { settingsObj = {}; }
+    fileDrop.addEventListener('click', () => fileInput.click());
+    fileDrop.addEventListener('dragover', e => { e.preventDefault(); fileDrop.classList.add('drag-over'); });
+    fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag-over'));
+    fileDrop.addEventListener('drop', e => { e.preventDefault(); fileDrop.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
 
-        const { error } = await sb.from('user_settings').upsert(
-          { user_id: session.user.id, settings: settingsObj },
-          { onConflict: 'user_id' }
-        );
-        if (error) { logLine(`  ✗ Settings error: ${error.message}`, 'err'); }
-        else        { logLine('  ✓ Settings saved', 'ok'); }
-        done++; setProgress(Math.round(done / total * 100));
-      }
-
-      // 2. Month data
-      for (const key of monthKeys) {
-        const m = key.match(/^wh_(\d{4})_(\d+)$/);
-        if (!m) { logLine(`  Skipping: ${key}`, 'warn'); continue; }
-        const docId = `${m[1]}_${m[2]}`;
-
-        logLine(`Uploading month ${docId}…`);
-
-        let days;
-        try { days = typeof parsedFile[key] === 'string' ? JSON.parse(parsedFile[key]) : parsedFile[key]; }
-        catch { logLine(`  ✗ Failed to parse ${key}`, 'err'); done++; continue; }
-
-        // Remove any null/undefined values Postgres won't like inside jsonb
-        const cleanDays = {};
-        Object.entries(days).forEach(([day, entry]) => {
-          const clean = {};
-          Object.entries(entry).forEach(([k, v]) => { if (v !== undefined && v !== null) clean[k] = v; });
-          if (Object.keys(clean).length) cleanDays[day] = clean;
-        });
-
-        const pensionChecked = pensionMap[docId] !== undefined ? pensionMap[docId] : true;
-
-        const { error } = await sb.from('month_hours').upsert(
-          { user_id: session.user.id, month_key: docId, days: cleanDays, pension_checked: pensionChecked, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id,month_key' }
-        );
-        if (error) { logLine(`  ✗ ${docId}: ${error.message}`, 'err'); }
-        else        { logLine(`  ✓ ${docId} (${Object.keys(cleanDays).length} days, pension: ${pensionChecked})`, 'ok'); }
-
-        done++; setProgress(Math.round(done / total * 100));
-      }
-
-      logLine(''); logLine('Migration complete! ✅', 'ok');
-      setProgress(100);
-      document.getElementById('migrateSection').style.display = 'none';
-      document.getElementById('doneSection').style.display    = 'block';
-
-    } catch(e) {
-      logLine(`ERROR: ${e.message}`, 'err');
+    function handleFile(file) {
       const errEl = document.getElementById('alertError');
-      errEl.textContent = `Migration failed: ${e.message}`;
-      errEl.style.display = 'block';
-      btnMigrate.disabled   = false;
-      btnMigrate.textContent = '⬆️ Start Migration';
+      errEl.style.display = 'none';
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          parsedFile = JSON.parse(e.target.result);
+          fileDrop.querySelector('.file-drop-text').textContent = `✓ ${file.name}`;
+          fileDrop.querySelector('.file-drop-sub').textContent = `${Object.keys(parsedFile).length} keys found`;
+          fileDrop.style.borderColor = '#2ec27e';
+          fileDrop.style.background = '#f0faf4';
+          btnMigrate.disabled = false;
+        } catch {
+          errEl.textContent = 'Could not parse JSON. Please check the file is valid.';
+          errEl.style.display = 'block';
+          parsedFile = null; btnMigrate.disabled = true;
+        }
+      };
+      reader.readAsText(file);
     }
-  });
-</script>
+
+    // ── Migration ──────────────────────────────────────────
+    function logLine(msg, type = '') {
+      const logEl = document.getElementById('log');
+      logEl.style.display = 'block';
+      const line = document.createElement('div');
+      if (type) line.className = type;
+      line.textContent = msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setProgress(pct) {
+      document.getElementById('progressWrap').style.display = 'block';
+      document.getElementById('progressBar').style.width = pct + '%';
+    }
+
+    btnMigrate.addEventListener('click', async () => {
+      if (!parsedFile) return;
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;
+
+      document.getElementById('alertError').style.display = 'none';
+      document.getElementById('alertSuccess').style.display = 'none';
+      document.getElementById('log').innerHTML = '';
+      document.getElementById('log').style.display = 'none';
+
+      btnMigrate.disabled = true;
+      btnMigrate.textContent = '⏳ Migrating…';
+
+      // Parse keys
+      const settingsRaw = parsedFile['wh_settings'] || null;
+      const monthKeys = Object.keys(parsedFile).filter(k => /^wh_\d{4}_\d+$/.test(k));
+      const pensionKeys = Object.keys(parsedFile).filter(k => /^wh_pension_\d{4}_\d+$/.test(k));
+
+      // Build pension lookup: "2025_6" → bool
+      const pensionMap = {};
+      pensionKeys.forEach(pk => {
+        const m = pk.match(/^wh_pension_(\d{4})_(\d+)$/);
+        if (m) pensionMap[`${m[1]}_${m[2]}`] = parsedFile[pk] !== 'false';
+      });
+
+      const total = (settingsRaw ? 1 : 0) + monthKeys.length;
+      let done = 0;
+
+      logLine(`Found: ${settingsRaw ? '1 settings, ' : ''}${monthKeys.length} month(s), ${pensionKeys.length} pension record(s)`);
+
+      try {
+        // 1. Settings
+        if (settingsRaw) {
+          logLine('Uploading settings…');
+          let settingsObj;
+          try { settingsObj = typeof settingsRaw === 'string' ? JSON.parse(settingsRaw) : settingsRaw; }
+          catch { settingsObj = {}; }
+
+          const { error } = await sb.from('user_settings').upsert(
+            { settings: settingsObj },
+            { onConflict: 'user_id' }
+          );
+          if (error) { logLine(`  ✗ Settings error: ${error.message}`, 'err'); }
+          else { logLine('  ✓ Settings saved', 'ok'); }
+          done++; setProgress(Math.round(done / total * 100));
+        }
+
+        // 2. Month data
+        for (const key of monthKeys) {
+          const m = key.match(/^wh_(\d{4})_(\d+)$/);
+          if (!m) { logLine(`  Skipping: ${key}`, 'warn'); continue; }
+          const docId = `${m[1]}_${m[2]}`;
+
+          logLine(`Uploading month ${docId}…`);
+
+          let days;
+          try { days = typeof parsedFile[key] === 'string' ? JSON.parse(parsedFile[key]) : parsedFile[key]; }
+          catch { logLine(`  ✗ Failed to parse ${key}`, 'err'); done++; continue; }
+
+          // Remove any null/undefined values Postgres won't like inside jsonb
+          const cleanDays = {};
+          Object.entries(days).forEach(([day, entry]) => {
+            const clean = {};
+            Object.entries(entry).forEach(([k, v]) => { if (v !== undefined && v !== null) clean[k] = v; });
+            if (Object.keys(clean).length) cleanDays[day] = clean;
+          });
+
+          const pensionChecked = pensionMap[docId] !== undefined ? pensionMap[docId] : true;
+
+          const { error } = await sb.from('month_hours').upsert(
+            { user_id: session.user.id, month_key: docId, days: cleanDays, pension_checked: pensionChecked, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id,month_key' }
+          );
+          if (error) { logLine(`  ✗ ${docId}: ${error.message}`, 'err'); }
+          else { logLine(`  ✓ ${docId} (${Object.keys(cleanDays).length} days, pension: ${pensionChecked})`, 'ok'); }
+
+          done++; setProgress(Math.round(done / total * 100));
+        }
+
+        logLine(''); logLine('Migration complete! ✅', 'ok');
+        setProgress(100);
+        document.getElementById('migrateSection').style.display = 'none';
+        document.getElementById('doneSection').style.display = 'block';
+
+      } catch (e) {
+        logLine(`ERROR: ${e.message}`, 'err');
+        const errEl = document.getElementById('alertError');
+        errEl.textContent = `Migration failed: ${e.message}`;
+        errEl.style.display = 'block';
+        btnMigrate.disabled = false;
+        btnMigrate.textContent = '⬆️ Start Migration';
+      }
+    });
+  </script>
 </body>
+
 </html>
