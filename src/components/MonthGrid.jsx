@@ -45,8 +45,12 @@ export default function MonthGrid({
   const empPct    = settings.employeePensionPct || 6
   const emrPct    = settings.employerPensionPct || 12.5
   const travel    = settings.travelAllowance    || 0
-  const empPension = pensionChecked ? Math.round(grossPay * empPct / 100) : 0
-  const emrPension = Math.round(grossPay * emrPct / 100)
+
+  // Pension deduction is based on the fixed monthly schedule (same as Benefits page)
+  const MONTHLY_HOURS = 28 * 4.33  // 121.24 hrs — Sun–Thu 5h×5 + Fri 3h × 4.33 weeks
+  const benefitsGross = Math.round(MONTHLY_HOURS * (settings.hourlyRate || 70))
+  const empPension = pensionChecked ? Math.round(benefitsGross * empPct / 100) : 0
+  const emrPension = Math.round(benefitsGross * emrPct / 100)
   const netPay     = grossPay - empPension + travel
   const fmt = n => '₪' + Math.round(n).toLocaleString('en-IL')
 
