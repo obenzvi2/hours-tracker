@@ -307,7 +307,7 @@ thead th.col-pay { background: #1a5fb4; color: #fff; }
   box-shadow: 0 8px 40px rgba(26,95,180,.18);
 }
 .login-logo { text-align: center; margin-bottom: 28px; }
-.login-logo-icon  { font-size: 2.4rem; }
+.login-logo-icon  { width: 3rem; height: 3rem; object-fit: contain; display: block; margin: 0 auto; }
 .login-logo-title { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 8px; }
 .login-logo-sub   { font-size: .82rem; color: #888; margin-top: 4px; }
 .login-error {
@@ -401,18 +401,29 @@ thead th.col-pay { background: #1a5fb4; color: #fff; }
   body { background: #fff; padding: 0; }
   .app-header, .rates-bar, .app-footer, .save-indicator,
   .btn-settings, .btn-print, .month-nav, .col-note { display: none !important; }
-  .print-header { display: block !important; text-align: center; margin-bottom: 18px; }
-  .print-title { font-size: 1.3rem; font-weight: 700; color: #1a1a2e; }
-  .print-month { font-size: 1rem; color: #555; margin-top: 4px; }
-  .card { box-shadow: none; border: 1px solid #ddd; border-radius: 0; }
-  table { font-size: .85rem; }
+  .print-header { display: block !important; text-align: center; margin-bottom: 8px; }
+  .print-title { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+  .print-month { font-size: .9rem; color: #555; margin-top: 2px; }
+  .card { box-shadow: none; border: 1px solid #ddd; border-radius: 0; margin-bottom: 8px !important; }
+  table { font-size: .8rem; }
+  thead th, td { padding: 5px 5px !important; }
   thead tr { background: #1a5fb4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .col-hours { background: #eef4ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  thead th.col-hours { background: #1a5fb4 !important; color: #fff !important; }
   .row-saturday { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .summary-card {
     display: flex !important; flex-wrap: wrap;
     background: #1a5fb4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
     border-radius: 0; box-shadow: none; page-break-inside: avoid;
+    padding: 10px 14px !important; gap: 8px !important;
   }
-  .time-input { border: none; background: transparent; font-size: .85rem; }
+  .summary-item { padding: 8px 10px !important; }
+  .summary-value { font-size: 1.1rem !important; }
+  .payment-breakdown-card { padding: 10px 14px !important; margin-bottom: 8px !important; box-shadow: none; border: 1px solid #ddd; border-radius: 0; }
+  .pb-title { margin-bottom: 6px !important; padding-bottom: 6px !important; font-size: .9rem; }
+  .pb-row { padding: 4px 0 !important; font-size: .85rem; }
+  .pb-total { padding: 7px 12px !important; margin-top: 4px !important; }
+  .pb-divider { margin: 3px 0 !important; }
+  .pb-employer { margin-top: 4px !important; padding-top: 2px !important; }
+  .time-input { border: none; background: transparent; font-size: .82rem; }
 }

@@ -36,7 +36,7 @@ export default function LoginPage() {
     }}>
       <div className="login-card">
         <div className="login-logo">
-          <div className="login-logo-icon">📋</div>
+          <img src="/favicon.png" alt="Work Hours Tracker" className="login-logo-icon" />
           <div className="login-logo-title">Work Hours Tracker</div>
           <div className="login-logo-sub">Sign in to access your data</div>
         </div>
